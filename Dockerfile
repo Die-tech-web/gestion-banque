@@ -8,6 +8,8 @@ COPY composer.json composer.lock ./
 
 COPY . .
 # Installer les dépendances PHP
+RUN composer require "zircote/swagger-php:^4.0" --no-interaction --prefer-dist
+
 RUN composer install --optimize-autoloader --no-interaction --prefer-dist
 
 # Étape 2: Image finale pour l'application
