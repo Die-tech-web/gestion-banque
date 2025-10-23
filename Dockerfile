@@ -6,6 +6,7 @@ WORKDIR /app
 # Copier les fichiers de dépendances
 COPY composer.json composer.lock ./
 
+COPY . .
 # Installer les dépendances PHP
 RUN composer install --optimize-autoloader --no-interaction --prefer-dist
 
