@@ -11,7 +11,7 @@ RUN composer require "zircote/swagger-php:^4.0" --no-scripts --no-interaction --
     && composer install --no-scripts --optimize-autoloader --no-interaction --prefer-dist
 
 # Lancer manuellement les scripts une fois tout installé
-RUN composer run-script post-autoload-dump
+
 
 # Étape 2: Image finale pour l'application
 FROM php:8.3-fpm-alpine
