@@ -6,8 +6,8 @@ WORKDIR /app
 # Copier les fichiers de dépendances
 COPY composer.json composer.lock ./
 
-# Installer les dépendances PHP sans scripts post-install
-RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-scripts
+# Installer les dépendances PHP
+RUN composer install --optimize-autoloader --no-interaction --prefer-dist
 
 # Étape 2: Image finale pour l'application
 FROM php:8.3-fpm-alpine
