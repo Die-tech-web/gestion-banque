@@ -47,7 +47,7 @@ class CompteValide implements ValidationRule
             'order.in' => 'L\'ordre de tri doit être "asc" ou "desc".',
             'limit.integer' => 'La limite doit être un entier.',
             'limit.min' => 'La limite doit être au moins 1.',
-            'limit.max' => 'La limite ne peut pas dépasser 100.',
+            'limit.max' => 'La limite ne peut pas dépasser 100 caractere.',
         ];
     }
 }
