@@ -2,46 +2,27 @@ version: '3.8'
 
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     ports:
-      - "8000:80"
+      - "8000:8000"
+    env_file:
+      - .env
     environment:
-      - APP_NAME=Laravel
       - APP_ENV=production
-      - APP_KEY=${APP_KEY}
       - APP_DEBUG=false
-      - APP_URL=${APP_URL}
-      - LOG_CHANNEL=stack
-      - DB_CONNECTION=pgsql
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
-      - DB_DATABASE=${DB_DATABASE}
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - BROADCAST_DRIVER=log
-      - CACHE_DRIVER=file
-      - FILESYSTEM_DISK=local
-      - QUEUE_CONNECTION=sync
-      - SESSION_DRIVER=file
-      - SESSION_LIFETIME=120
-      - MAIL_MAILER=smtp
-      - MAIL_HOST=${MAIL_HOST}
-      - MAIL_PORT=${MAIL_PORT}
-      - MAIL_USERNAME=${MAIL_USERNAME}
-      - MAIL_PASSWORD=${MAIL_PASSWORD}
-      - MAIL_ENCRYPTION=${MAIL_ENCRYPTION}
-      - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}
-      - MAIL_FROM_NAME=${MAIL_FROM_NAME}
-      - L5_SWAGGER_GENERATE_ALWAYS=true
-      - L5_SWAGGER_CONST_HOST=${L5_SWAGGER_CONST_HOST}
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: laravel
+      POSTGRES_USER: laravel
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
     volumes:
-      - ./storage:/var/www/html/storage
-    networks:
-      - laravel
+      - postgres_data:/var/lib/postgresql/data
 
-
-networks:
-  laravel:
-    driver: bridge
+volumes:
+  postgres_data:

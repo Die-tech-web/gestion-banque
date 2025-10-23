@@ -1,25 +1,14 @@
-#!/bin/bash
-set -e
+#!/bin/sh
 
-# Wait for database to be ready
-until pg_isready -h $DB_HOST -p $DB_PORT -U $DB_USERNAME; do
-    echo "Waiting for database..."
-    sleep 2
+# Attendre que la base de données soit prête
+echo "Waiting for database to be ready..."
+while ! pg_isready -h $DB_HOST -p $DB_PORT -U $DB_USERNAME; do
+  echo "Database is unavailable - sleeping"
+  sleep 1
 done
 
-# Run migrations
+echo "Database is up - executing migrations"
 php artisan migrate --force
 
-# Run seeders if needed
-# php artisan db:seed --force
-
-# Clear and cache config
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-
-# Generate Swagger documentation
-php artisan l5-swagger:generate
-
-# Start Apache
-apache2-foreground
+echo "Starting Laravel application..."
+exec "$@"

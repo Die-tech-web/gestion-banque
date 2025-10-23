@@ -1,87 +1,81 @@
-# Use the official PHP image with Apache
-FROM php:8.1-apache
+# Étape 1: Build des dépendances PHP
+FROM composer:2.6 AS composer-build
 
-# Set working directory
+WORKDIR /app
+
+# Copier les fichiers de dépendances
+COPY composer.json composer.lock ./
+
+# Installer les dépendances PHP sans scripts post-install
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-scripts
+
+# Étape 2: Image finale pour l'application
+FROM php:8.3-fpm-alpine
+
+# Installer les extensions PHP nécessaires
+RUN apk add --no-cache postgresql-dev \
+    && docker-php-ext-install pdo pdo_pgsql
+
+# Créer un utilisateur non-root
+RUN addgroup -g 1000 laravel && adduser -G laravel -g laravel -s /bin/sh -D laravel
+
+# Définir le répertoire de travail
 WORKDIR /var/www/html
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    libzip-dev \
-    zip \
-    unzip \
-    nodejs \
-    npm \
-    postgresql-client \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip pdo_pgsql
+# Copier les dépendances installées depuis l'étape de build
+COPY --from=composer-build /app/vendor ./vendor
 
-# Get latest Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Copier le reste du code de l'application
+COPY . .
 
-# Copy existing application directory contents
-COPY . /var/www/html
+# Créer les répertoires nécessaires et définir les permissions
+RUN mkdir -p storage/framework/{cache,data,sessions,testing,views} \
+    && mkdir -p storage/logs \
+    && mkdir -p bootstrap/cache \
+    && chown -R laravel:laravel /var/www/html \
+    && chmod -R 775 storage bootstrap/cache
 
-# Copy existing application directory permissions
-COPY --chown=www-data:www-data . /var/www/html
+# Créer un fichier .env minimal pour le build
+RUN echo "APP_NAME=Laravel" > .env && \
+    echo "APP_ENV=production" >> .env && \
+    echo "APP_KEY=" >> .env && \
+    echo "APP_DEBUG=false" >> .env && \
+    echo "APP_URL=http://localhost" >> .env && \
+    echo "" >> .env && \
+    echo "LOG_CHANNEL=stack" >> .env && \
+    echo "LOG_LEVEL=error" >> .env && \
+    echo "" >> .env && \
+    echo "DB_CONNECTION=pgsql" >> .env && \
+    echo "DB_HOST=\${DB_HOST}" >> .env && \
+    echo "DB_PORT=\${DB_PORT}" >> .env && \
+    echo "DB_DATABASE=\${DB_DATABASE}" >> .env && \
+    echo "DB_USERNAME=\${DB_USERNAME}" >> .env && \
+    echo "DB_PASSWORD=\${DB_PASSWORD}" >> .env && \
+    echo "" >> .env && \
+    echo "CACHE_DRIVER=file" >> .env && \
+    echo "SESSION_DRIVER=file" >> .env && \
+    echo "QUEUE_CONNECTION=sync" >> .env
 
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader
+# Changer les permissions du fichier .env pour l'utilisateur laravel
+RUN chown laravel:laravel .env
 
-# Install Node.js dependencies and build assets
-RUN npm install && npm run build
+# Générer la clé d'application et optimiser
+USER laravel
+RUN php artisan key:generate --force && \
+    php artisan config:cache && \
+    php artisan route:cache && \
+    php artisan view:cache
+USER root
 
-# Generate application key
-RUN php artisan key:generate
-
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache
-
-# Configure Apache
-RUN a2enmod rewrite
-RUN echo '<VirtualHost *:80>\n\
-    DocumentRoot /var/www/html/public\n\
-    <Directory /var/www/html/public>\n\
-        AllowOverride All\n\
-        Require all granted\n\
-    </Directory>\n\
-    ErrorLog ${APACHE_LOG_DIR}/error.log\n\
-    CustomLog ${APACHE_LOG_DIR}/access.log combined\n\
-</VirtualHost>' > /etc/apache2/sites-available/000-default.conf
-
-# Expose port 80
-EXPOSE 80
-
-# Create entrypoint script
-RUN echo '#!/bin/bash\n\
-set -e\n\
-\n\
-# Wait for database to be ready\n\
-until pg_isready -h $DB_HOST -p $DB_PORT -U $DB_USERNAME; do\n\
-    echo "Waiting for database..."\n\
-    sleep 2\n\
-done\n\
-\n\
-# Run migrations\n\
-php artisan migrate --force\n\
-\n\
-# Run seeders if needed\n\
-# php artisan db:seed --force\n\
-\n\
-# Clear and cache config\n\
-php artisan config:cache\n\
-php artisan route:cache\n\
-php artisan view:cache\n\
-\n\
-# Start Apache\n\
-apache2-foreground' > /usr/local/bin/docker-entrypoint.sh
-
+# Copier le script d'entrée
+COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# Set entrypoint
-ENTRYPOINT ["docker-entrypoint.sh"]
+# Passer à l'utilisateur non-root
+USER laravel
+
+# Exposer le port 8000
+EXPOSE 8000
+
+# Commande par défaut
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
