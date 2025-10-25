@@ -14,12 +14,15 @@
     },
     "servers": [
         {
-            "url": "http://localhost:8000",
+            "url": "http://127.0.0.1:8000",
             "description": "Gestion Compte API Server"
+        },
+        {
+            "url": "/api/v1/die.niang"
         }
     ],
     "paths": {
-        "/api/comptes": {
+        "/api/v1/{api_name}/comptes": {
             "get": {
                 "tags": [
                     "Comptes"
@@ -28,6 +31,16 @@
                 "description": "Returns list of comptes",
                 "operationId": "getComptesList",
                 "parameters": [
+                    {
+                        "name": "api_name",
+                        "in": "path",
+                        "description": "Dynamic API name from config",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "default": "die.niang"
+                        }
+                    },
                     {
                         "name": "type",
                         "in": "query",
@@ -104,9 +117,57 @@
                                             "example": true
                                         },
                                         "pagination": {
+                                            "properties": {
+                                                "currentPage": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "totalPages": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "totalItems": {
+                                                    "type": "integer",
+                                                    "example": 50
+                                                },
+                                                "itemsPerPage": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "hasNext": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "hasPrevious": {
+                                                    "type": "boolean",
+                                                    "example": false
+                                                }
+                                            },
                                             "type": "object"
                                         },
                                         "links": {
+                                            "properties": {
+                                                "self": {
+                                                    "type": "string",
+                                                    "format": "url",
+                                                    "example": "http://127.0.0.1:8000/api/v1/die.niang/comptes?page=1"
+                                                },
+                                                "next": {
+                                                    "type": "string",
+                                                    "format": "url",
+                                                    "example": "http://127.0.0.1:8000/api/v1/die.niang/comptes?page=2"
+                                                },
+                                                "first": {
+                                                    "type": "string",
+                                                    "format": "url",
+                                                    "example": "http://127.0.0.1:8000/api/v1/die.niang/comptes?page=1"
+                                                },
+                                                "last": {
+                                                    "type": "string",
+                                                    "format": "url",
+                                                    "example": "http://127.0.0.1:8000/api/v1/die.niang/comptes?page=5"
+                                                }
+                                            },
                                             "type": "object"
                                         }
                                     },
@@ -121,7 +182,7 @@
                 }
             }
         },
-        "/api/comptes/non-archives": {
+        "/api/v1/{api_name}/comptes/non-archives": {
             "get": {
                 "tags": [
                     "Comptes"
@@ -131,6 +192,16 @@
                 "operationId": "getNonArchivedComptesList",
                 "parameters": [
                     {
+                        "name": "api_name",
+                        "in": "path",
+                        "description": "Dynamic API name from config",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "default": "die.niang"
+                        }
+                    },
+                    {
                         "name": "type",
                         "in": "query",
                         "description": "Filter by account type (courant, epargne)",
@@ -197,9 +268,57 @@
                                             "example": true
                                         },
                                         "pagination": {
+                                            "properties": {
+                                                "currentPage": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "totalPages": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "totalItems": {
+                                                    "type": "integer",
+                                                    "example": 50
+                                                },
+                                                "itemsPerPage": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "hasNext": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "hasPrevious": {
+                                                    "type": "boolean",
+                                                    "example": false
+                                                }
+                                            },
                                             "type": "object"
                                         },
                                         "links": {
+                                            "properties": {
+                                                "self": {
+                                                    "type": "string",
+                                                    "format": "url",
+                                                    "example": "http://127.0.0.1:8000/api/v1/die.niang/comptes/non-archives?page=1"
+                                                },
+                                                "next": {
+                                                    "type": "string",
+                                                    "format": "url",
+                                                    "example": "http://127.0.0.1:8000/api/v1/die.niang/comptes/non-archives?page=2"
+                                                },
+                                                "first": {
+                                                    "type": "string",
+                                                    "format": "url",
+                                                    "example": "http://127.0.0.1:8000/api/v1/die.niang/comptes/non-archives?page=1"
+                                                },
+                                                "last": {
+                                                    "type": "string",
+                                                    "format": "url",
+                                                    "example": "http://127.0.0.1:8000/api/v1/die.niang/comptes/non-archives?page=5"
+                                                }
+                                            },
                                             "type": "object"
                                         }
                                     },
@@ -214,7 +333,7 @@
                 }
             }
         },
-        "/api/comptes/archives": {
+        "/api/v1/{api_name}/comptes/archives": {
             "get": {
                 "tags": [
                     "Comptes"
@@ -223,6 +342,16 @@
                 "description": "Returns list of archived comptes",
                 "operationId": "getArchivedComptesList",
                 "parameters": [
+                    {
+                        "name": "api_name",
+                        "in": "path",
+                        "description": "Dynamic API name from config",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "default": "die.niang"
+                        }
+                    },
                     {
                         "name": "type",
                         "in": "query",
@@ -290,9 +419,57 @@
                                             "example": true
                                         },
                                         "pagination": {
+                                            "properties": {
+                                                "currentPage": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "totalPages": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "totalItems": {
+                                                    "type": "integer",
+                                                    "example": 50
+                                                },
+                                                "itemsPerPage": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "hasNext": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "hasPrevious": {
+                                                    "type": "boolean",
+                                                    "example": false
+                                                }
+                                            },
                                             "type": "object"
                                         },
                                         "links": {
+                                            "properties": {
+                                                "self": {
+                                                    "type": "string",
+                                                    "format": "url",
+                                                    "example": "http://127.0.0.1:8000/api/v1/die.niang/comptes/archives?page=1"
+                                                },
+                                                "next": {
+                                                    "type": "string",
+                                                    "format": "url",
+                                                    "example": "http://127.0.0.1:8000/api/v1/die.niang/comptes/archives?page=2"
+                                                },
+                                                "first": {
+                                                    "type": "string",
+                                                    "format": "url",
+                                                    "example": "http://127.0.0.1:8000/api/v1/die.niang/comptes/archives?page=1"
+                                                },
+                                                "last": {
+                                                    "type": "string",
+                                                    "format": "url",
+                                                    "example": "http://127.0.0.1:8000/api/v1/die.niang/comptes/archives?page=5"
+                                                }
+                                            },
                                             "type": "object"
                                         }
                                     },
@@ -303,6 +480,100 @@
                     },
                     "400": {
                         "description": "Bad Request"
+                    }
+                }
+            }
+        },
+        "/api/v1/{api_name}/comptes/{id}/archiver": {
+            "post": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Archive a specific compte",
+                "description": "Archives a compte by its ID",
+                "operationId": "archiveCompte",
+                "parameters": [
+                    {
+                        "name": "api_name",
+                        "in": "path",
+                        "description": "Dynamic API name from config",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "default": "die.niang"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the compte to archive",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Compte archived successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Compte archived successfully."
+                                        },
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Compte not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Compte not found."
+                                        },
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Failed to archive compte."
+                                        },
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 }
             }

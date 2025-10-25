@@ -19,10 +19,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/v1/comptes', [CompteController::class, 'index']);
-Route::get('/v1/comptes/non-archives', [CompteController::class, 'getNonArchivedComptes']);
-Route::get('/v1/comptes/archives', [CompteController::class, 'getArchivedComptes']);
+Route::apiResource('comptes', CompteController::class)->only(['index']);
+Route::get('/comptes/non-archives', [CompteController::class, 'getNonArchivedComptes']);
+Route::get('/comptes/archives', [CompteController::class, 'getArchivedComptes']);
+Route::post('/comptes/{id}/archiver', [CompteController::class, 'archiveCompte']);
 
-Route::get('/v1/test', function () {
+Route::get('/test', function () {
     return response()->json(['message' => 'Test route works!']);
 });

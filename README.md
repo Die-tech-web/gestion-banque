@@ -64,3 +64,100 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Personnalisation de l'URL de Base avec "die.niang"
+
+Cette section explique comment l'URL de base de l'API et de la documentation Swagger a été personnalisée pour inclure le nom "die.niang".
+
+### 1. Définition du Nom Dynamique (`die.niang`)
+
+Le nom dynamique "die.niang" est défini dans le fichier de configuration de l'API et peut être surchargé par une variable d'environnement :
+
+*   **`config/api.php`**: Ce fichier contient la configuration par défaut pour le nom de l'API.
+    ```php
+    // config/api.php
+    return [
+        'name' => env('API_DYNAMIC_NAME', 'die.niang'),
+    ];
+    ```
+    Par défaut, si `API_DYNAMIC_NAME` n'est pas défini dans le fichier `.env`, le nom `die.niang` sera utilisé.
+
+*   **`.env`**: Vous pouvez surcharger la valeur par défaut en définissant la variable `API_DYNAMIC_NAME` dans votre fichier `.env`.
+    ```
+    # .env
+    API_DYNAMIC_NAME=die.niang
+    ```
+    Assurez-vous que cette variable est définie sans préfixe `/v1/` pour éviter les duplications dans les routes.
+
+### 2. Configuration des Endpoints API
+
+La personnalisation de l'URL de base pour les endpoints API est gérée dans les fichiers suivants :
+
+*   **`app/Providers/RouteServiceProvider.php`**: Ce service provider est responsable du chargement des fichiers de routes et de l'application des préfixes globaux.
+    ```php
+    // app/Providers/RouteServiceProvider.php
+    Route::middleware('api')
+        ->prefix('api/v1/' . config('api.name')) // Applique le préfixe global
+        ->group(base_path('routes/api.php'));
+    ```
+    Ici, toutes les routes définies dans `routes/api.php` sont automatiquement préfixées par `api/v1/` suivi de la valeur de `config('api.name')` (qui est `die.niang`).
+
+*   **`routes/api.php`**: Ce fichier contient les définitions spécifiques de vos routes API.
+    ```php
+    // routes/api.php
+    // Ancien code avec préfixe redondant :
+    // Route::prefix('/v1/' . config('api.name'))->group(function () { ... });
+
+    // Code corrigé (sans le préfixe redondant) :
+    Route::apiResource('comptes', CompteController::class)->only(['index']);
+    Route::get('/comptes/non-archives', [CompteController::class, 'getNonArchivedComptes']);
+    // ... autres routes
+    ```
+    **Correction effectuée :** Le préfixe `Route::prefix('/v1/' . config('api.name'))` a été supprimé de ce fichier car il entraînait une duplication du segment `v1/die.niang` dans l'URL finale (par exemple, `api/v1/die.niang/v1/die.niang/comptes`). Le préfixe global défini dans `RouteServiceProvider` est suffisant.
+
+**Exemples d'endpoints API (avec `die.niang` comme nom dynamique) :**
+
+*   **Obtenir tous les comptes :** `http://127.0.0.1:8000/api/v1/die.niang/comptes`
+*   **Obtenir les comptes non archivés :** `http://127.0.0.1:8000/api/v1/die.niang/comptes/non-archives`
+*   **Obtenir les comptes archivés :** `http://127.0.0.1:8000/api/v1/die.niang/comptes/archives`
+*   **Route de test :** `http://127.0.0.1:8000/api/v1/die.niang/test`
+
+### 3. Configuration de la Documentation Swagger
+
+La documentation Swagger est également configurée pour utiliser ce nom dynamique :
+
+*   **`.env`**: Les variables d'environnement suivantes sont utilisées pour configurer le chemin de base et l'hôte de Swagger.
+    ```
+    # .env
+    L5_SWAGGER_BASE_PATH=/api/v1/die.niang
+    L5_SWAGGER_CONST_HOST=http://127.0.0.1:8000
+    ```
+    `L5_SWAGGER_BASE_PATH` définit le chemin de base que Swagger utilisera pour construire les URLs de vos API. `L5_SWAGGER_CONST_HOST` définit l'hôte de base.
+
+*   **`config/l5-swagger.php`**: Ce fichier de configuration contient les paramètres détaillés de L5 Swagger.
+    ```php
+    // config/l5-swagger.php
+    'documentations' => [
+        'default' => [
+            'routes' => [
+                'api' => 'die.niang/api/documentation', // Route pour accéder à l'interface Swagger
+            ],
+            // ...
+        ],
+    ],
+    'defaults' => [
+        'paths' => [
+            'base' => env('L5_SWAGGER_BASE_PATH', '/api/v1/die.niang'), // Chemin de base utilisé par Swagger
+        ],
+        'constants' => [
+            'L5_SWAGGER_CONST_HOST' => env('L5_SWAGGER_CONST_HOST', 'http://127.0.0.1:8000'),
+        ],
+    ],
+    ```
+    La route pour accéder à l'interface Swagger est définie pour inclure `die.niang`. Le `base` path et le `CONST_HOST` sont configurés pour utiliser les valeurs du `.env` ou des valeurs par défaut qui incluent le nom dynamique.
+
+**Exemple d'accès à la documentation Swagger :**
+
+*   **Documentation Swagger :** `http://127.0.0.1:8000/die.niang/api/documentation`
+
+En suivant ces configurations, l'application Laravel et sa documentation Swagger utilisent un nom dynamique (`die.niang` par défaut) dans leurs URLs, offrant une flexibilité pour la personnalisation.

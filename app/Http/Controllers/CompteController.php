@@ -66,11 +66,18 @@ class CompteController extends Controller
     use ApiResponseTrait, CompteMessages;
     /**
      * @OA\Get(
-     *      path="/api/comptes",
+     *      path="/api/v1/{api_name}/comptes",
      *      operationId="getComptesList",
      *      tags={"Comptes"},
      *      summary="Get list of comptes",
      *      description="Returns list of comptes",
+     *      @OA\Parameter(
+     *          name="api_name",
+     *          in="path",
+     *          description="Dynamic API name from config",
+     *          required=true,
+     *          @OA\Schema(type="string", default="die.niang")
+     *      ),
      *      @OA\Parameter(
      *          name="type",
      *          in="query",
@@ -120,8 +127,20 @@ class CompteController extends Controller
      *              type="object",
      *              @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/CompteResource")),
      *              @OA\Property(property="success", type="boolean", example=true),
-     *              @OA\Property(property="pagination", type="object"),
-     *              @OA\Property(property="links", type="object")
+     *              @OA\Property(property="pagination", type="object",
+     *                  @OA\Property(property="currentPage", type="integer", example=1),
+     *                  @OA\Property(property="totalPages", type="integer", example=5),
+     *                  @OA\Property(property="totalItems", type="integer", example=50),
+     *                  @OA\Property(property="itemsPerPage", type="integer", example=10),
+     *                  @OA\Property(property="hasNext", type="boolean", example=true),
+     *                  @OA\Property(property="hasPrevious", type="boolean", example=false)
+     *              ),
+     *              @OA\Property(property="links", type="object",
+     *                  @OA\Property(property="self", type="string", format="url", example="http://127.0.0.1:8000/api/v1/die.niang/comptes?page=1"),
+     *                  @OA\Property(property="next", type="string", format="url", example="http://127.0.0.1:8000/api/v1/die.niang/comptes?page=2"),
+     *                  @OA\Property(property="first", type="string", format="url", example="http://127.0.0.1:8000/api/v1/die.niang/comptes?page=1"),
+     *                  @OA\Property(property="last", type="string", format="url", example="http://127.0.0.1:8000/api/v1/die.niang/comptes?page=5")
+     *              )
      *          )
      *      ),
      *      @OA\Response(
@@ -132,11 +151,18 @@ class CompteController extends Controller
      */
     /**
      * @OA\Get(
-     *      path="/api/comptes",
+     *      path="/api/v1/{api_name}/comptes",
      *      operationId="getComptesList",
      *      tags={"Comptes"},
      *      summary="Get list of comptes",
      *      description="Returns list of comptes",
+     *      @OA\Parameter(
+     *          name="api_name",
+     *          in="path",
+     *          description="Dynamic API name from config",
+     *          required=true,
+     *          @OA\Schema(type="string", default="die.niang")
+     *      ),
      *      @OA\Parameter(
      *          name="type",
      *          in="query",
@@ -186,8 +212,20 @@ class CompteController extends Controller
      *              type="object",
      *              @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/CompteResource")),
      *              @OA\Property(property="success", type="boolean", example=true),
-     *              @OA\Property(property="pagination", type="object"),
-     *              @OA\Property(property="links", type="object")
+     *              @OA\Property(property="pagination", type="object",
+     *                  @OA\Property(property="currentPage", type="integer", example=1),
+     *                  @OA\Property(property="totalPages", type="integer", example=5),
+     *                  @OA\Property(property="totalItems", type="integer", example=50),
+     *                  @OA\Property(property="itemsPerPage", type="integer", example=10),
+     *                  @OA\Property(property="hasNext", type="boolean", example=true),
+     *                  @OA\Property(property="hasPrevious", type="boolean", example=false)
+     *              ),
+     *              @OA\Property(property="links", type="object",
+     *                  @OA\Property(property="self", type="string", format="url", example="http://127.0.0.1:8000/api/v1/die.niang/comptes?page=1"),
+     *                  @OA\Property(property="next", type="string", format="url", example="http://127.0.0.1:8000/api/v1/die.niang/comptes?page=2"),
+     *                  @OA\Property(property="first", type="string", format="url", example="http://127.0.0.1:8000/api/v1/die.niang/comptes?page=1"),
+     *                  @OA\Property(property="last", type="string", format="url", example="http://127.0.0.1:8000/api/v1/die.niang/comptes?page=5")
+     *              )
      *          )
      *      ),
      *      @OA\Response(
@@ -210,11 +248,18 @@ class CompteController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/api/comptes/non-archives",
+     *      path="/api/v1/{api_name}/comptes/non-archives",
      *      operationId="getNonArchivedComptesList",
      *      tags={"Comptes"},
      *      summary="Get list of non-archived comptes",
      *      description="Returns list of non-archived comptes",
+     *      @OA\Parameter(
+     *          name="api_name",
+     *          in="path",
+     *          description="Dynamic API name from config",
+     *          required=true,
+     *          @OA\Schema(type="string", default="die.niang")
+     *      ),
      *      @OA\Parameter(
      *          name="type",
      *          in="query",
@@ -257,8 +302,20 @@ class CompteController extends Controller
      *              type="object",
      *              @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/CompteResource")),
      *              @OA\Property(property="success", type="boolean", example=true),
-     *              @OA\Property(property="pagination", type="object"),
-     *              @OA\Property(property="links", type="object")
+     *              @OA\Property(property="pagination", type="object",
+     *                  @OA\Property(property="currentPage", type="integer", example=1),
+     *                  @OA\Property(property="totalPages", type="integer", example=5),
+     *                  @OA\Property(property="totalItems", type="integer", example=50),
+     *                  @OA\Property(property="itemsPerPage", type="integer", example=10),
+     *                  @OA\Property(property="hasNext", type="boolean", example=true),
+     *                  @OA\Property(property="hasPrevious", type="boolean", example=false)
+     *              ),
+     *              @OA\Property(property="links", type="object",
+     *                  @OA\Property(property="self", type="string", format="url", example="http://127.0.0.1:8000/api/v1/die.niang/comptes/non-archives?page=1"),
+     *                  @OA\Property(property="next", type="string", format="url", example="http://127.0.0.1:8000/api/v1/die.niang/comptes/non-archives?page=2"),
+     *                  @OA\Property(property="first", type="string", format="url", example="http://127.0.0.1:8000/api/v1/die.niang/comptes/non-archives?page=1"),
+     *                  @OA\Property(property="last", type="string", format="url", example="http://127.0.0.1:8000/api/v1/die.niang/comptes/non-archives?page=5")
+     *              )
      *          )
      *      ),
      *      @OA\Response(
@@ -281,11 +338,18 @@ class CompteController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/api/comptes/archives",
+     *      path="/api/v1/{api_name}/comptes/archives",
      *      operationId="getArchivedComptesList",
      *      tags={"Comptes"},
      *      summary="Get list of archived comptes",
      *      description="Returns list of archived comptes",
+     *      @OA\Parameter(
+     *          name="api_name",
+     *          in="path",
+     *          description="Dynamic API name from config",
+     *          required=true,
+     *          @OA\Schema(type="string", default="die.niang")
+     *      ),
      *      @OA\Parameter(
      *          name="type",
      *          in="query",
@@ -328,8 +392,20 @@ class CompteController extends Controller
      *              type="object",
      *              @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/CompteResource")),
      *              @OA\Property(property="success", type="boolean", example=true),
-     *              @OA\Property(property="pagination", type="object"),
-     *              @OA\Property(property="links", type="object")
+     *              @OA\Property(property="pagination", type="object",
+     *                  @OA\Property(property="currentPage", type="integer", example=1),
+     *                  @OA\Property(property="totalPages", type="integer", example=5),
+     *                  @OA\Property(property="totalItems", type="integer", example=50),
+     *                  @OA\Property(property="itemsPerPage", type="integer", example=10),
+     *                  @OA\Property(property="hasNext", type="boolean", example=true),
+     *                  @OA\Property(property="hasPrevious", type="boolean", example=false)
+     *              ),
+     *              @OA\Property(property="links", type="object",
+     *                  @OA\Property(property="self", type="string", format="url", example="http://127.0.0.1:8000/api/v1/die.niang/comptes/archives?page=1"),
+     *                  @OA\Property(property="next", type="string", format="url", example="http://127.0.0.1:8000/api/v1/die.niang/comptes/archives?page=2"),
+     *                  @OA\Property(property="first", type="string", format="url", example="http://127.0.0.1:8000/api/v1/die.niang/comptes/archives?page=1"),
+     *                  @OA\Property(property="last", type="string", format="url", example="http://127.0.0.1:8000/api/v1/die.niang/comptes/archives?page=5")
+     *              )
      *          )
      *      ),
      *      @OA\Response(
@@ -345,8 +421,86 @@ class CompteController extends Controller
 
         return $this->success(
             $comptes, // Pass the paginator directly
+            $comptes, // Pass the paginator directly
             $this->archivedComptesRetrievedSuccessfully(),
             Response::HTTP_OK
         );
+    }
+
+    /**
+     * @OA\Post(
+     *      path="/api/v1/{api_name}/comptes/{id}/archiver",
+     *      operationId="archiveCompte",
+     *      tags={"Comptes"},
+     *      summary="Archive a specific compte",
+     *      description="Archives a compte by its ID",
+     *      @OA\Parameter(
+     *          name="api_name",
+     *          in="path",
+     *          description="Dynamic API name from config",
+     *          required=true,
+     *          @OA\Schema(type="string", default="die.niang")
+     *      ),
+     *      @OA\Parameter(
+     *          name="id",
+     *          in="path",
+     *          description="ID of the compte to archive",
+     *          required=true,
+     *          @OA\Schema(type="integer", format="int64")
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Compte archived successfully",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="Compte archived successfully."),
+     *              @OA\Property(property="success", type="boolean", example=true)
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Compte not found",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="Compte not found."),
+     *              @OA\Property(property="success", type="boolean", example=false)
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Internal Server Error",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="Failed to archive compte."),
+     *              @OA\Property(property="success", type="boolean", example=false)
+     *          )
+     *      )
+     * )
+     */
+    public function archiveCompte(int $id): JsonResponse
+    {
+        $compte = Compte::find($id);
+
+        if (!$compte) {
+            return $this->error(
+                $this->compteNotFound(),
+                Response::HTTP_NOT_FOUND
+            );
+        }
+
+        try {
+            $compte->archived = true;
+            $compte->save();
+            return $this->success(
+                null,
+                $this->compteArchivedSuccessfully(),
+                Response::HTTP_OK
+            );
+        } catch (\Exception $e) {
+            return $this->error(
+                $this->failedToArchiveCompte(),
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
     }
 }
