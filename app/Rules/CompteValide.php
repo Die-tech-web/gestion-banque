@@ -73,6 +73,7 @@ class CompteValide implements ValidationRule
             'compte_archived' => 'Compte archivé avec succès',
             'compte_blocked' => 'Compte bloqué avec succès',
             'compte_unblocked' => 'Compte débloqué avec succès',
+            'compte_details_retrieved' => 'Détails du compte récupérés avec succès',
         ];
     }
 

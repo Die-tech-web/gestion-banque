@@ -29,6 +29,7 @@ class RouteServiceProvider extends ServiceProvider
         });
 
         $this->routes(function () {
+            // Routes API avec prefix dynamique
             Route::middleware('api')
                 ->prefix('api/v1/' . config('api.name'))
                 ->group(base_path('routes/api.php'));

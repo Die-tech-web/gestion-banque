@@ -1,0 +1,342 @@
+{
+  "info": {
+    "name": "Gestion Compte API - Tests Complets",
+    "description": "Collection Postman pour tester tous les endpoints de l'API Gestion Compte",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "api_name",
+      "value": "die.niang",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "2|wBLjXJ0yli42BmqguRgu8HyBgnRMQj0113UZpwDobc3c1b9b",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentification",
+      "item": [
+        {
+          "name": "Obtenir un token d'authentification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"password\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Création de Compte",
+      "item": [
+        {
+          "name": "Créer un compte avec nouveau client",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"cheque\",\n  \"soldeInitial\": 500000,\n  \"devise\": \"FCFA\",\n  \"client\": {\n    \"titulaire\": \"rama gueye\",\n    \"nci\": \"1234567890123\",\n    \"email\": \"ramatoulaye.rtg@gmail.com\",\n    \"telephone\": \"+221771279062\",\n    \"adresse\": \"Dakar, Sénégal\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/{{api_name}}/comptes",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "{{api_name}}", "comptes"]
+            }
+          }
+        },
+        {
+          "name": "Créer un compte avec client existant",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"cheque\",\n  \"soldeInitial\": 100000,\n  \"devise\": \"FCFA\",\n  \"client\": {\n    \"id\": 1\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/{{api_name}}/comptes",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "{{api_name}}", "comptes"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Gestion des Comptes",
+      "item": [
+        {
+          "name": "Lister tous les comptes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/{{api_name}}/comptes",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "{{api_name}}", "comptes"]
+            }
+          }
+        },
+        {
+          "name": "Lister les comptes non archivés",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/{{api_name}}/comptes/non-archives",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "{{api_name}}", "comptes", "non-archives"]
+            }
+          }
+        },
+        {
+          "name": "Lister les comptes archivés",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/{{api_name}}/comptes/archives",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "{{api_name}}", "comptes", "archives"]
+            }
+          }
+        },
+        {
+          "name": "Bloquer un compte",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motif\": \"Test blocage\",\n  \"duree\": 1,\n  \"unite\": \"jour\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/{{api_name}}/comptes/9/bloquer",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "{{api_name}}", "comptes", "9", "bloquer"]
+            }
+          }
+        },
+        {
+          "name": "Débloquer un compte",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motif\": \"Test déblocage\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/{{api_name}}/comptes/9/debloquer",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "{{api_name}}", "comptes", "9", "debloquer"]
+            }
+          }
+        },
+        {
+          "name": "Archiver un compte",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/{{api_name}}/comptes/9/archiver",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "{{api_name}}", "comptes", "9", "archiver"]
+            }
+          }
+        },
+        {
+          "name": "Supprimer un compte (soft delete)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/{{api_name}}/comptes/9",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "{{api_name}}", "comptes", "9"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tests d'erreur",
+      "item": [
+        {
+          "name": "Création sans authentification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"cheque\",\n  \"soldeInitial\": 500000,\n  \"devise\": \"FCFA\",\n  \"client\": {\n    \"titulaire\": \"Test User\",\n    \"nci\": \"1234567890123\",\n    \"email\": \"test@example.com\",\n    \"telephone\": \"+221771234567\",\n    \"adresse\": \"Dakar\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/{{api_name}}/comptes",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "{{api_name}}", "comptes"]
+            }
+          }
+        },
+        {
+          "name": "Création avec données invalides",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"invalid\",\n  \"soldeInitial\": 5000,\n  \"devise\": \"INVALID\",\n  \"client\": {\n    \"titulaire\": \"\",\n    \"nci\": \"123\",\n    \"email\": \"invalid-email\",\n    \"telephone\": \"123\",\n    \"adresse\": \"\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/{{api_name}}/comptes",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "{{api_name}}", "comptes"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

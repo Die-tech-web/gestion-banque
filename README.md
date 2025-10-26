@@ -277,3 +277,431 @@ Headers:
 - Le système ne modifie que les comptes dont la `dateDeblocagePrevue` est dépassée
 - Toutes les fonctionnalités existantes de blocage/déblocage manuel restent intactes
 - Les comptes débloqués automatiquement passent au statut "actif" avec remise à zéro des champs de blocage
+
+## Tests Postman pour la Création de Compte
+
+Cette section fournit tous les tests nécessaires pour tester la fonctionnalité de création de compte avec Postman.
+
+### Prérequis
+- Application Laravel démarrée
+- Authentification avec Sanctum (token Bearer requis)
+- Base de données configurée
+
+### Headers communs pour toutes les requêtes
+```
+Authorization: Bearer {votre_token_sanctum}
+Accept: application/json
+Content-Type: application/json
+```
+
+---
+
+### 🧪 **Test 1: Création de compte avec nouveau client**
+
+**Requête POST :**
+```
+URL: http://127.0.0.1:8000/api/v1/die.niang/comptes
+Method: POST
+```
+
+**Body (JSON) :**
+```json
+{
+  "type": "cheque",
+  "soldeInitial": 500000,
+  "devise": "FCFA",
+  "client": {
+    "titulaire": "rama gueye",
+    "nci": "1234567890123",
+    "email": "cheikh.sy@example.com",
+    "telephone": "+221771279062",
+    "adresse": "Dakar, Sénégal"
+  }
+}
+```
+
+**✅ Réponse attendue (201 Created) :**
+```json
+{
+  "success": true,
+  "message": "Compte créé avec succès",
+  "data": {
+    "id": "660f9511-f30c-52e5-b827-557766551111",
+    "numeroCompte": "C00123460",
+    "titulaire": "Hawa BB Wane",
+    "type": "cheque",
+    "solde": 500000,
+    "devise": "FCFA",
+    "dateCreation": "2025-10-26T12:00:00Z",
+    "statut": "actif",
+    "metadata": {
+      "derniereModification": "2025-10-26T12:00:00Z",
+      "version": 1
+    }
+  }
+}
+```
+
+---
+
+### 🧪 **Test 2: Création de compte avec client existant**
+
+**Requête POST :**
+```
+URL: http://127.0.0.1:8000/api/v1/die.niang/comptes
+Method: POST
+```
+
+**Body (JSON) :**
+```json
+{
+  "type": "epargne",
+  "soldeInitial": 100000,
+  "devise": "USD",
+  "client": {
+    "id": 1
+  }
+}
+```
+
+**✅ Réponse attendue (201 Created) :**
+```json
+{
+  "success": true,
+  "message": "Compte créé avec succès",
+  "data": {
+    "id": "660f9511-f30c-52e5-b827-557766551112",
+    "numeroCompte": "C00123461",
+    "titulaire": "Nom du client existant",
+    "type": "epargne",
+    "solde": 100000,
+    "devise": "USD",
+    "dateCreation": "2025-10-26T12:05:00Z",
+    "statut": "actif",
+    "metadata": {
+      "derniereModification": "2025-10-26T12:05:00Z",
+      "version": 1
+    }
+  }
+}
+```
+
+---
+
+### 🧪 **Test 3: Validation - Solde initial trop bas**
+
+**Requête POST :**
+```
+URL: http://127.0.0.1:8000/api/v1/die.niang/comptes
+Method: POST
+```
+
+**Body (JSON) :**
+```json
+{
+  "type": "cheque",
+  "soldeInitial": 5000,
+  "devise": "FCFA",
+  "client": {
+    "titulaire": "Test User",
+    "nci": "1234567890123",
+    "email": "test@example.com",
+    "telephone": "+221771234567",
+    "adresse": "Test Address"
+  }
+}
+```
+
+**❌ Réponse attendue (400 Bad Request) :**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Les données fournies sont invalides",
+    "details": {
+      "soldeInitial": "Le solde initial doit être d'au moins 10 000."
+    }
+  }
+}
+```
+
+---
+
+### 🧪 **Test 4: Validation - Email déjà utilisé**
+
+**Requête POST :**
+```
+URL: http://127.0.0.1:8000/api/v1/die.niang/comptes
+Method: POST
+```
+
+**Body (JSON) :**
+```json
+{
+  "type": "cheque",
+  "soldeInitial": 50000,
+  "devise": "FCFA",
+  "client": {
+    "titulaire": "Test User 2",
+    "nci": "9876543210987",
+    "email": "cheikh.sy@example.com",
+    "telephone": "+221771234568",
+    "adresse": "Test Address 2"
+  }
+}
+```
+
+**❌ Réponse attendue (400 Bad Request) :**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Les données fournies sont invalides",
+    "details": {
+      "client.email": "Cet email est déjà utilisé."
+    }
+  }
+}
+```
+
+---
+
+### 🧪 **Test 5: Validation - Format téléphone invalide**
+
+**Requête POST :**
+```
+URL: http://127.0.0.1:8000/api/v1/die.niang/comptes
+Method: POST
+```
+
+**Body (JSON) :**
+```json
+{
+  "type": "cheque",
+  "soldeInitial": 50000,
+  "devise": "FCFA",
+  "client": {
+    "titulaire": "Test User 3",
+    "nci": "1111111111111",
+    "email": "test3@example.com",
+    "telephone": "771234567",
+    "adresse": "Test Address 3"
+  }
+}
+```
+
+**❌ Réponse attendue (400 Bad Request) :**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Les données fournies sont invalides",
+    "details": {
+      "client.telephone": "Le numéro de téléphone doit être au format sénégalais (+2217xxxxxxxx)."
+    }
+  }
+}
+```
+
+---
+
+### 🧪 **Test 6: Validation - NCI invalide**
+
+**Requête POST :**
+```
+URL: http://127.0.0.1:8000/api/v1/die.niang/comptes
+Method: POST
+```
+
+**Body (JSON) :**
+```json
+{
+  "type": "cheque",
+  "soldeInitial": 50000,
+  "devise": "FCFA",
+  "client": {
+    "titulaire": "Test User 4",
+    "nci": "123456789",
+    "email": "test4@example.com",
+    "telephone": "+221771234569",
+    "adresse": "Test Address 4"
+  }
+}
+```
+
+**❌ Réponse attendue (400 Bad Request) :**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Les données fournies sont invalides",
+    "details": {
+      "client.nci": "Le numéro national sénégalais doit contenir exactement 13 chiffres."
+    }
+  }
+}
+```
+
+---
+
+### 🧪 **Test 7: Validation - Type de compte invalide**
+
+**Requête POST :**
+```
+URL: http://127.0.0.1:8000/api/v1/die.niang/comptes
+Method: POST
+```
+
+**Body (JSON) :**
+```json
+{
+  "type": "courant",
+  "soldeInitial": 50000,
+  "devise": "FCFA",
+  "client": {
+    "titulaire": "Test User 5",
+    "nci": "2222222222222",
+    "email": "test5@example.com",
+    "telephone": "+221771234570",
+    "adresse": "Test Address 5"
+  }
+}
+```
+
+**❌ Réponse attendue (400 Bad Request) :**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Les données fournies sont invalides",
+    "details": {
+      "type": "Le type de compte doit être cheque ou epargne."
+    }
+  }
+}
+```
+
+---
+
+### 🧪 **Test 8: Validation - Devise invalide**
+
+**Requête POST :**
+```
+URL: http://127.0.0.1:8000/api/v1/die.niang/comptes
+Method: POST
+```
+
+**Body (JSON) :**
+```json
+{
+  "type": "cheque",
+  "soldeInitial": 50000,
+  "devise": "EUR",
+  "client": {
+    "titulaire": "Test User 6",
+    "nci": "3333333333333",
+    "email": "test6@example.com",
+    "telephone": "+221771234571",
+    "adresse": "Test Address 6"
+  }
+}
+```
+
+**✅ Réponse attendue (201 Created) :**
+```json
+{
+  "success": true,
+  "message": "Compte créé avec succès",
+  "data": {
+    "id": "660f9511-f30c-52e5-b827-557766551113",
+    "numeroCompte": "C00123462",
+    "titulaire": "Test User 6",
+    "type": "cheque",
+    "solde": 50000,
+    "devise": "EUR",
+    "dateCreation": "2025-10-26T12:10:00Z",
+    "statut": "actif",
+    "metadata": {
+      "derniereModification": "2025-10-26T12:10:00Z",
+      "version": 1
+    }
+  }
+}
+```
+
+---
+
+### 🧪 **Test 9: Vérification du solde calculé**
+
+Après création, vérifiez que le solde est correctement calculé en consultant la liste des comptes :
+
+**Requête GET :**
+```
+URL: http://127.0.0.1:8000/api/v1/die.niang/comptes
+Method: GET
+```
+
+**✅ Vérifiez que :**
+- Le solde correspond au solde initial
+- Le numéro de compte est unique
+- Le statut est "actif"
+
+---
+
+### 🧪 **Test 10: Vérification des logs**
+
+Après chaque requête, vérifiez les logs dans `storage/logs/laravel.log` pour confirmer que le middleware LoggingMiddleware fonctionne :
+
+```
+[2025-10-26 12:00:00] local.INFO: API Request Log {"timestamp":"2025-10-26T12:00:00.000000Z","method":"POST","url":"http://127.0.0.1:8000/api/v1/die.niang/comptes","operation":"Création de compte","host":"127.0.0.1:8000","resource":"api/v1/die.niang/comptes","user_agent":"PostmanRuntime/7.36.3","ip":"127.0.0.1","status_code":201,"duration_ms":150.5,"cookies":{...}}
+```
+
+---
+
+### 📋 **Résumé des Tests**
+
+| Test | Description | Résultat Attendu |
+|------|-------------|------------------|
+| 1 | Création nouveau client | ✅ 201 Created |
+| 2 | Création client existant | ✅ 201 Created |
+| 3 | Solde trop bas | ❌ 400 Bad Request |
+| 4 | Email dupliqué | ❌ 400 Bad Request |
+| 5 | Téléphone invalide | ❌ 400 Bad Request |
+| 6 | NCI invalide | ❌ 400 Bad Request |
+| 7 | Type invalide | ❌ 400 Bad Request |
+| 8 | Devise valide (EUR) | ✅ 201 Created |
+| 9 | Vérification solde | ✅ Solde correct |
+| 10 | Logs middleware | ✅ Logs présents |
+
+### 🔧 **Configuration Twilio (pour les notifications)**
+
+Pour que les emails et SMS soient envoyés, configurez vos variables d'environnement :
+
+```env
+# Mail Configuration
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.sendgrid.com
+MAIL_PORT=587
+MAIL_USERNAME=your_sendgrid_username
+MAIL_PASSWORD=your_sendgrid_password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=noreply@yourdomain.com
+MAIL_FROM_NAME="${APP_NAME}"
+
+# Twilio Configuration
+TWILIO_SID=your_twilio_sid
+TWILIO_TOKEN=your_twilio_token
+TWILIO_FROM=your_twilio_phone_number
+```
+
+### ⚠️ **Notes importantes**
+- Tous les champs sont obligatoires pour un nouveau client
+- Le numéro de compte est généré automatiquement et est unique
+- Le solde est calculé dynamiquement via l'accesseur `getSoldeAttribute`
+- Les notifications sont envoyées de manière asynchrone via les événements
+- Le middleware de logging enregistre toutes les requêtes API

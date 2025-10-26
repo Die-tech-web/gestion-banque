@@ -59,6 +59,24 @@ use Illuminate\Http\JsonResponse; // Import JsonResponse
  *                 )
  *             )
  *         }
+ *     ),
+ *     @OA\Schema(
+ *         schema="LoginRequest",
+ *         type="object",
+ *         required={"email"},
+ *         @OA\Property(property="email", type="string", format="email", example="admin@example.com"),
+ *         @OA\Property(property="password", type="string", example="password", description="Requis pour les admins"),
+ *         @OA\Property(property="code_authentification", type="string", example="123456", description="Requis pour les clients")
+ *     ),
+ *     @OA\Schema(
+ *         schema="LoginResponse",
+ *         type="object",
+ *         @OA\Property(property="token", type="string", example="1|abc123def456")
+ *     ),
+ *     @OA\Schema(
+ *         schema="ErrorResponse",
+ *         type="object",
+ *         @OA\Property(property="message", type="string", example="Invalid credentials")
  *     )
  * )
  */
@@ -240,8 +258,22 @@ class CompteController extends Controller
         // Vérifier et débloquer automatiquement les comptes expirés avant de récupérer la liste
         Compte::checkExpiredBlocks();
 
+        $user = Auth::user();
+        $isAdmin = $user->admin()->exists();
+
         $limit = $request->get('limit', 10);
-        $comptes = Compte::applyFiltersAndPagination($request)->paginate($limit);
+
+        if ($isAdmin) {
+            // Admin voit tous les comptes
+            $comptes = Compte::applyFiltersAndPagination($request)->paginate($limit);
+        } else {
+            // Client voit seulement ses propres comptes
+            $client = $user->client;
+            if (!$client) {
+                return $this->error('Accès non autorisé', 403);
+            }
+            $comptes = Compte::where('client_id', $client->id)->applyFiltersAndPagination($request)->paginate($limit);
+        }
 
         return $this->success(
             $comptes, // Pass the paginator directly
@@ -333,8 +365,22 @@ class CompteController extends Controller
         // Vérifier et débloquer automatiquement les comptes expirés avant de récupérer la liste
         Compte::checkExpiredBlocks();
 
+        $user = Auth::user();
+        $isAdmin = $user->admin()->exists();
+
         $limit = $request->get('limit', 10);
-        $comptes = Compte::where('archived', false)->applyFiltersAndPagination($request)->paginate($limit);
+
+        if ($isAdmin) {
+            // Admin voit tous les comptes non archivés
+            $comptes = Compte::where('archived', false)->applyFiltersAndPagination($request)->paginate($limit);
+        } else {
+            // Client voit seulement ses propres comptes non archivés
+            $client = $user->client;
+            if (!$client) {
+                return $this->error('Accès non autorisé', 403);
+            }
+            $comptes = Compte::where('client_id', $client->id)->where('archived', false)->applyFiltersAndPagination($request)->paginate($limit);
+        }
 
         return $this->success(
             $comptes, // Pass the paginator directly
@@ -424,8 +470,22 @@ class CompteController extends Controller
     
     public function getArchivedComptes(CompteListRequest $request): JsonResponse
     {
+        $user = Auth::user();
+        $isAdmin = $user->admin()->exists();
+
         $limit = $request->get('limit', 10);
-        $comptes = Compte::where('archived', true)->applyFiltersAndPagination($request)->paginate($limit);
+
+        if ($isAdmin) {
+            // Admin voit tous les comptes archivés
+            $comptes = Compte::where('archived', true)->applyFiltersAndPagination($request)->paginate($limit);
+        } else {
+            // Client voit seulement ses propres comptes archivés
+            $client = $user->client;
+            if (!$client) {
+                return $this->error('Client non trouvé', 404);
+            }
+            $comptes = Compte::where('client_id', $client->id)->where('archived', true)->applyFiltersAndPagination($request)->paginate($limit);
+        }
 
         return $this->success(
             $comptes, // Pass the paginator directly
@@ -756,6 +816,86 @@ class CompteController extends Controller
                 CompteValide::httpStatusCodes()['internal_server_error']
             );
         }
+    }
+
+    /**
+     * @OA\Get(
+     *      path="/api/v1/{api_name}/comptes/{id}",
+     *      operationId="getCompte",
+     *      tags={"Comptes"},
+     *      summary="Get a specific compte",
+     *      description="Returns details of a specific compte by its ID",
+     *      @OA\Parameter(
+     *          name="api_name",
+     *          in="path",
+     *          description="Dynamic API name from config",
+     *          required=true,
+     *          @OA\Schema(type="string", default="die.niang")
+     *      ),
+     *      @OA\Parameter(
+     *          name="id",
+     *          in="path",
+     *          description="ID of the compte to retrieve",
+     *          required=true,
+     *          @OA\Schema(type="integer", format="int64")
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="success", type="boolean", example=true),
+     *              @OA\Property(property="message", type="string", example="Détails du compte récupérés avec succès"),
+     *              @OA\Property(property="data", ref="#/components/schemas/CompteResource")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Compte not found",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="Compte non trouvé."),
+     *              @OA\Property(property="success", type="boolean", example=false)
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=403,
+     *          description="Forbidden",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="Accès non autorisé à ce compte."),
+     *              @OA\Property(property="success", type="boolean", example=false)
+     *          )
+     *      )
+     * )
+     */
+    public function show(int $id): JsonResponse
+    {
+        $compte = Compte::with(['client.user', 'transactions'])->find($id);
+
+        if (!$compte) {
+            return $this->error(
+                CompteValide::errorMessages()['compte_not_found'],
+                CompteValide::httpStatusCodes()['not_found']
+            );
+        }
+
+        $user = Auth::user();
+        $isAdmin = $user->admin()->exists();
+
+        // Vérifier les permissions : admin voit tous les comptes, client seulement les siens
+        if (!$isAdmin && $compte->client_id !== $user->client->id) {
+            return $this->error(
+                'Accès non autorisé à ce compte.',
+                403
+            );
+        }
+
+        return $this->success(
+            new CompteResource($compte),
+            CompteValide::successMessages()['compte_details_retrieved'],
+            CompteValide::httpStatusCodes()['success']
+        );
     }
 
     /**

@@ -19,7 +19,7 @@ class CompteResource extends JsonResource
             'numeroCompte' => $this->numeroCompte,
             'titulaire' => $this->client->user->name, // Assuming client and user relations are loaded
             'type' => $this->type,
-            'solde' => $this->solde, // Accessor
+            'solde' => $this->solde, // Accessor calculé dynamiquement
             'devise' => $this->devise,
             'dateCreation' => $this->dateCreation->toIso8601String(),
             'statut' => $this->statut,

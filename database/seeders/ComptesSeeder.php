@@ -22,8 +22,9 @@ class ComptesSeeder extends Seeder
         })->first();
 
         if ($clientOne) {
-            Compte::create([
+            Compte::firstOrCreate([
                 'numeroCompte' => 'C00123456',
+            ], [
                 'client_id' => $clientOne->id,
                 'type' => 'epargne',
                 'devise' => 'XOF',
@@ -33,8 +34,9 @@ class ComptesSeeder extends Seeder
                 'version' => 1,
             ]);
 
-            Compte::create([
+            Compte::firstOrCreate([
                 'numeroCompte' => 'C00123457',
+            ], [
                 'client_id' => $clientOne->id,
                 'type' => 'cheque',
                 'devise' => 'XOF',
@@ -46,8 +48,9 @@ class ComptesSeeder extends Seeder
         }
 
         if ($clientTwo) {
-            Compte::create([
+            Compte::firstOrCreate([
                 'numeroCompte' => 'C00123458',
+            ], [
                 'client_id' => $clientTwo->id,
                 'type' => 'epargne',
                 'devise' => 'XOF',
@@ -57,8 +60,9 @@ class ComptesSeeder extends Seeder
                 'version' => 1,
             ]);
 
-            Compte::create([
+            Compte::firstOrCreate([
                 'numeroCompte' => 'C00123459',
+            ], [
                 'client_id' => $clientTwo->id,
                 'type' => 'cheque',
                 'devise' => 'XOF',
@@ -68,8 +72,9 @@ class ComptesSeeder extends Seeder
                 'version' => 1,
             ]);
 
-            Compte::create([
+            Compte::firstOrCreate([
                 'numeroCompte' => 'C00123460',
+            ], [
                 'client_id' => $clientTwo->id,
                 'type' => 'epargne',
                 'devise' => 'XOF',

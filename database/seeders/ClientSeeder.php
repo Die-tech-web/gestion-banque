@@ -21,6 +21,7 @@ class ClientSeeder extends Seeder
                 'user_id' => $clientOneUser->id,
                 'adresse' => '123 Rue Principale',
                 'telephone' => '111-222-3333',
+                'code_authentification' => 'ABC123',
             ]);
         }
 
@@ -29,6 +30,7 @@ class ClientSeeder extends Seeder
                 'user_id' => $clientTwoUser->id,
                 'adresse' => '456 Avenue Secondaire',
                 'telephone' => '444-555-6666',
+                'code_authentification' => 'XYZ789',
             ]);
         }
     }
