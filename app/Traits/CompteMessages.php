@@ -28,4 +28,9 @@ trait CompteMessages
     {
         return 'Échec de la suppression du compte.';
     }
+
+    protected function compteAlreadyDeleted(): string
+    {
+        return 'Le compte est déjà supprimé.';
+    }
 }

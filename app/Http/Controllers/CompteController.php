@@ -562,12 +562,19 @@ class CompteController extends Controller
      */
     public function destroy(int $id): JsonResponse
     {
-        $compte = Compte::find($id);
+        $compte = Compte::withTrashed()->find($id);
 
         if (!$compte) {
             return $this->error(
                 $this->compteNotFound(),
                 Response::HTTP_NOT_FOUND
+            );
+        }
+
+        if ($compte->trashed()) {
+            return $this->error(
+                $this->compteAlreadyDeleted(),
+                Response::HTTP_CONFLICT
             );
         }
 
@@ -582,7 +589,7 @@ class CompteController extends Controller
                     'id' => $compte->id,
                     'numeroCompte' => $compte->numeroCompte,
                     'statut' => $compte->statut,
-                    'dateFermeture' => $compte->dateFermeture->toIso8601String(),
+                    'dateFermeture' => $compte->dateFermeture ? $compte->dateFermeture->toIso8601String() : null,
                 ],
                 $this->compteDeletedSuccessfully(),
                 Response::HTTP_OK
