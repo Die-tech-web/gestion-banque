@@ -48,6 +48,65 @@ class CompteValide implements ValidationRule
             'limit.integer' => 'La limite doit être un entier.',
             'limit.min' => 'La limite doit être au moins 1.',
             'limit.max' => 'La limite ne peut pas dépasser 100 caractere.',
+            'motif.required' => 'Le motif est obligatoire.',
+            'motif.string' => 'Le motif doit être une chaîne de caractères.',
+            'duree.required' => 'La durée est obligatoire.',
+            'duree.integer' => 'La durée doit être un entier.',
+            'duree.min' => 'La durée doit être au moins 1.',
+            'unite.required' => 'L\'unité est obligatoire.',
+            'unite.in' => 'L\'unité doit être "jour", "jours", "semaine", "semaines", "mois", "annee" ou "annees".',
+        ];
+    }
+
+    /**
+     * Get success messages for operations.
+     *
+     * @return array
+     */
+    public static function successMessages(): array
+    {
+        return [
+            'comptes_retrieved' => 'Comptes récupérés avec succès',
+            'non_archived_comptes_retrieved' => 'Comptes non archivés récupérés avec succès',
+            'archived_comptes_retrieved' => 'Comptes archivés récupérés avec succès',
+            'compte_deleted' => 'Compte supprimé avec succès',
+            'compte_archived' => 'Compte archivé avec succès',
+            'compte_blocked' => 'Compte bloqué avec succès',
+            'compte_unblocked' => 'Compte débloqué avec succès',
+        ];
+    }
+
+    /**
+     * Get error messages for operations.
+     *
+     * @return array
+     */
+    public static function errorMessages(): array
+    {
+        return [
+            'compte_not_found' => 'Compte non trouvé.',
+            'compte_already_deleted' => 'Le compte est déjà supprimé.',
+            'failed_to_delete_compte' => 'Échec de la suppression du compte.',
+            'failed_to_archive_compte' => 'Échec de l\'archivage du compte.',
+            'compte_already_blocked' => 'Le compte est déjà bloqué.',
+            'failed_to_block_compte' => 'Échec du blocage du compte.',
+            'compte_not_blocked' => 'Le compte n\'est pas bloqué.',
+            'failed_to_unblock_compte' => 'Échec du déblocage du compte.',
+        ];
+    }
+
+    /**
+     * Get HTTP status codes for operations.
+     *
+     * @return array
+     */
+    public static function httpStatusCodes(): array
+    {
+        return [
+            'success' => 200,
+            'not_found' => 404,
+            'conflict' => 409,
+            'internal_server_error' => 500,
         ];
     }
 }

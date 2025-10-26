@@ -52,8 +52,7 @@ class ComptesSeeder extends Seeder
                 'type' => 'epargne',
                 'devise' => 'XOF',
                 'dateCreation' => '2023-03-10',
-                'statut' => 'bloque',
-                'motifBlocage' => 'Inactivité de 30+ jours',
+                'statut' => 'actif',
                 'derniereModification' => now(),
                 'version' => 1,
             ]);
@@ -65,6 +64,17 @@ class ComptesSeeder extends Seeder
                 'devise' => 'XOF',
                 'dateCreation' => '2023-04-22',
                 'statut' => 'ferme',
+                'derniereModification' => now(),
+                'version' => 1,
+            ]);
+
+            Compte::create([
+                'numeroCompte' => 'C00123460',
+                'client_id' => $clientTwo->id,
+                'type' => 'epargne',
+                'devise' => 'XOF',
+                'dateCreation' => '2023-05-15',
+                'statut' => 'actif',
                 'derniereModification' => now(),
                 'version' => 1,
             ]);

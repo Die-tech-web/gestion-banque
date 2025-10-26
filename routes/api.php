@@ -23,6 +23,8 @@ Route::apiResource('comptes', CompteController::class)->only(['index']);
 Route::get('/comptes/non-archives', [CompteController::class, 'getNonArchivedComptes']);
 Route::get('/comptes/archives', [CompteController::class, 'getArchivedComptes']);
 Route::post('/comptes/{id}/archiver', [CompteController::class, 'archiveCompte']);
+Route::post('/comptes/{id}/bloquer', [CompteController::class, 'block']);
+Route::post('/comptes/{id}/debloquer', [CompteController::class, 'unblock']);
 Route::delete('/comptes/{id}', [CompteController::class, 'destroy']);
 
 Route::get('/test', function () {

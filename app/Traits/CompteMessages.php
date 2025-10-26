@@ -2,35 +2,52 @@
 
 namespace App\Traits;
 
+use App\Rules\CompteValide;
+
 trait CompteMessages
 {
     protected function comptesRetrievedSuccessfully(): string
     {
-        return 'Comptes récupérés avec succès';
+        return CompteValide::successMessages()['comptes_retrieved'];
     }
 
     protected function nonArchivedComptesRetrievedSuccessfully(): string
     {
-        return 'Comptes non archivés récupérés avec succès';
+        return CompteValide::successMessages()['non_archived_comptes_retrieved'];
     }
 
     protected function archivedComptesRetrievedSuccessfully(): string
     {
-        return 'Comptes archivés récupérés avec succès';
+        return CompteValide::successMessages()['archived_comptes_retrieved'];
     }
 
     protected function compteDeletedSuccessfully(): string
     {
-        return 'Compte supprimé avec succès';
+        return CompteValide::successMessages()['compte_deleted'];
     }
 
     protected function failedToDeleteCompte(): string
     {
-        return 'Échec de la suppression du compte.';
+        return CompteValide::errorMessages()['failed_to_delete_compte'];
     }
 
     protected function compteAlreadyDeleted(): string
     {
-        return 'Le compte est déjà supprimé.';
+        return CompteValide::errorMessages()['compte_already_deleted'];
+    }
+
+    protected function compteNotFound(): string
+    {
+        return CompteValide::errorMessages()['compte_not_found'];
+    }
+
+    protected function compteArchivedSuccessfully(): string
+    {
+        return CompteValide::successMessages()['compte_archived'];
+    }
+
+    protected function failedToArchiveCompte(): string
+    {
+        return CompteValide::errorMessages()['failed_to_archive_compte'];
     }
 }

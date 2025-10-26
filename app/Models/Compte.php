@@ -18,6 +18,9 @@ class Compte extends Model
         'devise',
         'dateCreation',
         'statut',
+        'motifBlocage',
+        'dateBlocage',
+        'dateDeblocagePrevue',
         'derniereModification',
         'version',
         'dateFermeture',
@@ -38,6 +41,8 @@ class Compte extends Model
         'dateCreation' => 'date',
         'derniereModification' => 'datetime',
         'dateFermeture' => 'datetime',
+        'dateBlocage' => 'datetime',
+        'dateDeblocagePrevue' => 'datetime',
     ];
 
     // Relation avec Client
@@ -59,4 +64,41 @@ class Compte extends Model
         $totalRetraits = $this->transactions()->where('type', 'retrait')->sum('montant');
         return $totalDepots - $totalRetraits;
     }
+
+    /**
+     * Vérifier et débloquer automatiquement les comptes dont la date de déblocage est dépassée.
+     *
+     * @return void
+     */
+    public function checkAndUnblockExpired()
+    {
+        if ($this->statut === 'bloque' && $this->dateDeblocagePrevue && now()->greaterThanOrEqualTo($this->dateDeblocagePrevue)) {
+            $this->statut = 'actif';
+            $this->motifBlocage = null;
+            $this->dateBlocage = null;
+            $this->dateDeblocagePrevue = null;
+            $this->derniereModification = now();
+            $this->save();
+        }
+    }
+
+    /**
+     * Scope pour vérifier et débloquer automatiquement les comptes expirés dans une collection.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+     public static function checkExpiredBlocks()
+     {
+         self::where('statut', 'bloque')
+               ->whereNotNull('dateDeblocagePrevue')
+               ->where('dateDeblocagePrevue', '<=', now())
+               ->update([
+                   'statut' => 'actif',
+                   'motifBlocage' => null,
+                   'dateBlocage' => null,
+                   'dateDeblocagePrevue' => null,
+                   'derniereModification' => now(),
+               ]);
+     }
 }

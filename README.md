@@ -162,3 +162,118 @@ La documentation Swagger est également configurée pour utiliser ce nom dynamiq
 *   **Documentation Swagger :** `http://127.0.0.1:8000/die.niang/api/documentation`
 
 En suivant ces configurations, l'application Laravel et sa documentation Swagger utilisent un nom dynamique (`die.niang` par défaut) dans leurs URLs, offrant une flexibilité pour la personnalisation.
+
+## Test de la Fonctionnalité de Déblocage Automatique des Comptes
+
+Cette section explique comment tester la nouvelle fonctionnalité de déblocage automatique des comptes expirés à l'aide de Postman.
+
+### Prérequis
+- Avoir un compte existant dans la base de données
+- Utiliser Postman ou un outil similaire pour les requêtes HTTP
+
+### Étapes de Test
+
+#### 1. Bloquer un Compte avec une Durée Courte
+Pour tester le déblocage automatique, bloquez un compte avec une durée très courte (par exemple 1 minute).
+
+**Requête POST :**
+```
+URL: http://127.0.0.1:8000/api/v1/die.niang/comptes/{id}/bloquer
+Method: POST
+Headers:
+  Content-Type: application/json
+  Accept: application/json
+Body (raw JSON):
+{
+  "motif": "Test de déblocage automatique",
+  "duree": 1,
+  "unite": "jour"
+}
+```
+
+**Exemple concret :**
+```
+URL: http://127.0.0.1:8000/api/v1/die.niang/comptes/1/bloquer
+Method: POST
+Headers:
+  Content-Type: application/json
+  Accept: application/json
+Body:
+{
+  "motif": "Activé suspecte detectée",
+  "duree": 1,
+  "unite": "jour"
+}
+```
+
+**Réponse attendue :**
+```json
+{
+  "success": true,
+  "message": "Compte bloqué avec succès",
+  "data": {
+    "id": 1,
+    "statut": "bloque",
+    "motifBlocage": "Test automatique",
+    "dateBlocage": "2025-10-26T06:20:00.000000Z",
+    "dateDeblocagePrevue": "2025-10-27T06:20:00.000000Z"
+  }
+}
+```
+
+#### 2. Vérifier l'État du Compte
+Récupérez la liste des comptes pour voir que le compte est bien bloqué.
+
+**Requête GET :**
+```
+URL: http://127.0.0.1:8000/api/v1/die.niang/comptes
+Method: GET
+Headers:
+  Accept: application/json
+```
+
+**Réponse attendue :** Le compte avec l'ID spécifié devrait avoir `statut: "bloque"`.
+
+#### 3. Simuler l'Expiration (Optionnel)
+Pour tester immédiatement, vous pouvez modifier manuellement la `dateDeblocagePrevue` dans la base de données pour qu'elle soit dans le passé, ou attendre que la durée configurée s'écoule.
+
+#### 4. Vérifier le Déblocage Automatique
+Après l'expiration de la durée, faites une nouvelle requête pour récupérer les comptes. Le système vérifiera automatiquement et débloquera les comptes expirés.
+
+**Requête GET (même que l'étape 2) :**
+```
+URL: http://127.0.0.1:8000/api/v1/die.niang/comptes
+Method: GET
+Headers:
+  Accept: application/json
+```
+
+**Réponse attendue après expiration :** Le compte devrait maintenant avoir `statut: "actif"` et les champs de blocage remis à `null`.
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "numeroCompte": "CM123456789",
+      "statut": "actif",
+      "motifBlocage": null,
+      "dateBlocage": null,
+      "dateDeblocagePrevue": null,
+      // ... autres champs
+    }
+  ],
+  // ... pagination et autres métadonnées
+}
+```
+
+### Points Importants
+- Le déblocage automatique se produit lors des opérations suivantes :
+  - Récupération de la liste des comptes (`GET /api/v1/die.niang/comptes`)
+  - Récupération des comptes non archivés (`GET /api/v1/die.niang/comptes/non-archives`)
+  - Tentative de blocage d'un compte déjà bloqué
+  - Tentative de déblocage d'un compte
+- Le système ne modifie que les comptes dont la `dateDeblocagePrevue` est dépassée
+- Toutes les fonctionnalités existantes de blocage/déblocage manuel restent intactes
+- Les comptes débloqués automatiquement passent au statut "actif" avec remise à zéro des champs de blocage

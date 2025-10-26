@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\BlocageCompteRequest;
+use App\Http\Requests\DeblocageCompteRequest;
 use App\Http\Requests\CompteListRequest;
 use App\Http\Resources\CompteResource;
 use App\Models\Compte;
@@ -10,7 +12,6 @@ use Illuminate\Http\Request; // Import Request for store and update methods
 use App\Rules\CompteValide; // Import the custom rule
 use App\Models\Client; // Import Client model
 use App\Traits\ApiResponseTrait;
-use App\Traits\CompteMessages; // Import the new trait
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Http\JsonResponse; // Import JsonResponse
 
@@ -63,7 +64,7 @@ use Illuminate\Http\JsonResponse; // Import JsonResponse
  */
 class CompteController extends Controller
 {
-    use ApiResponseTrait, CompteMessages;
+    use ApiResponseTrait;
     /**
      * @OA\Get(
      *      path="/api/v1/{api_name}/comptes",
@@ -236,13 +237,16 @@ class CompteController extends Controller
      */
     public function index(CompteListRequest $request): JsonResponse
     {
+        // Vérifier et débloquer automatiquement les comptes expirés avant de récupérer la liste
+        Compte::checkExpiredBlocks();
+
         $limit = $request->get('limit', 10);
         $comptes = Compte::applyFiltersAndPagination($request)->paginate($limit);
 
         return $this->success(
             $comptes, // Pass the paginator directly
-            $this->comptesRetrievedSuccessfully(),
-            Response::HTTP_OK
+            CompteValide::successMessages()['comptes_retrieved'],
+            CompteValide::httpStatusCodes()['success']
         );
     }
 
@@ -326,13 +330,16 @@ class CompteController extends Controller
      */
     public function getNonArchivedComptes(CompteListRequest $request): JsonResponse
     {
+        // Vérifier et débloquer automatiquement les comptes expirés avant de récupérer la liste
+        Compte::checkExpiredBlocks();
+
         $limit = $request->get('limit', 10);
         $comptes = Compte::where('archived', false)->applyFiltersAndPagination($request)->paginate($limit);
 
         return $this->success(
             $comptes, // Pass the paginator directly
-            $this->nonArchivedComptesRetrievedSuccessfully(),
-            Response::HTTP_OK
+            CompteValide::successMessages()['non_archived_comptes_retrieved'],
+            CompteValide::httpStatusCodes()['success']
         );
     }
 
@@ -422,8 +429,8 @@ class CompteController extends Controller
 
         return $this->success(
             $comptes, // Pass the paginator directly
-            $this->archivedComptesRetrievedSuccessfully(),
-            Response::HTTP_OK
+            CompteValide::successMessages()['archived_comptes_retrieved'],
+            CompteValide::httpStatusCodes()['success']
         );
     }
 
@@ -483,8 +490,8 @@ class CompteController extends Controller
 
         if (!$compte) {
             return $this->error(
-                $this->compteNotFound(),
-                Response::HTTP_NOT_FOUND
+                CompteValide::errorMessages()['compte_not_found'],
+                CompteValide::httpStatusCodes()['not_found']
             );
         }
 
@@ -493,13 +500,13 @@ class CompteController extends Controller
             $compte->save();
             return $this->success(
                 null,
-                $this->compteArchivedSuccessfully(),
-                Response::HTTP_OK
+                CompteValide::successMessages()['compte_archived'],
+                CompteValide::httpStatusCodes()['success']
             );
         } catch (\Exception $e) {
             return $this->error(
-                $this->failedToArchiveCompte(),
-                Response::HTTP_INTERNAL_SERVER_ERROR
+                CompteValide::errorMessages()['failed_to_archive_compte'],
+                CompteValide::httpStatusCodes()['internal_server_error']
             );
         }
     }
@@ -566,15 +573,15 @@ class CompteController extends Controller
 
         if (!$compte) {
             return $this->error(
-                $this->compteNotFound(),
-                Response::HTTP_NOT_FOUND
+                CompteValide::errorMessages()['compte_not_found'],
+                CompteValide::httpStatusCodes()['not_found']
             );
         }
 
         if ($compte->trashed()) {
             return $this->error(
-                $this->compteAlreadyDeleted(),
-                Response::HTTP_CONFLICT
+                CompteValide::errorMessages()['compte_already_deleted'],
+                CompteValide::httpStatusCodes()['conflict']
             );
         }
 
@@ -591,14 +598,281 @@ class CompteController extends Controller
                     'statut' => $compte->statut,
                     'dateFermeture' => $compte->dateFermeture ? $compte->dateFermeture->toIso8601String() : null,
                 ],
-                $this->compteDeletedSuccessfully(),
-                Response::HTTP_OK
+                CompteValide::successMessages()['compte_deleted'],
+                CompteValide::httpStatusCodes()['success']
             );
         } catch (\Exception $e) {
             \Log::error("Failed to delete compte: " . $e->getMessage());
             return $this->error(
-                $this->failedToDeleteCompte(),
-                Response::HTTP_INTERNAL_SERVER_ERROR
+                CompteValide::errorMessages()['failed_to_delete_compte'],
+                CompteValide::httpStatusCodes()['internal_server_error']
+            );
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *      path="/api/v1/{api_name}/comptes/{id}/bloquer",
+     *      operationId="blockCompte",
+     *      tags={"Comptes"},
+     *      summary="Block a specific compte",
+     *      description="Blocks a compte by its ID with a motif and duration",
+     *      @OA\Parameter(
+     *          name="api_name",
+     *          in="path",
+     *          description="Dynamic API name from config",
+     *          required=true,
+     *          @OA\Schema(type="string", default="die.niang")
+     *      ),
+     *      @OA\Parameter(
+     *          name="id",
+     *          in="path",
+     *          description="ID of the compte to block",
+     *          required=true,
+     *          @OA\Schema(type="integer", format="int64")
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          @OA\JsonContent(
+     *              type="object",
+     *              required={"motif", "duree", "unite"},
+     *              @OA\Property(property="motif", type="string", example="Activité suspecte détectée"),
+     *              @OA\Property(property="duree", type="integer", example=30),
+     *              @OA\Property(property="unite", type="string", enum={"jour", "jours", "semaine", "semaines", "mois", "annee", "annees"}, example="mois")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Compte blocked successfully",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="success", type="boolean", example=true),
+     *              @OA\Property(property="message", type="string", example="Compte bloqué avec succès"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="string", format="uuid", example="550e8400-e29b-41d4-a716-446655440000"),
+     *                  @OA\Property(property="statut", type="string", example="bloque"),
+     *                  @OA\Property(property="motifBlocage", type="string", example="Activité suspecte détectée"),
+     *                  @OA\Property(property="dateBlocage", type="string", format="date-time", example="2025-10-19T11:20:00Z"),
+     *                  @OA\Property(property="dateDeblocagePrevue", type="string", format="date-time", example="2025-11-18T11:20:00Z")
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Compte not found",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="Compte non trouvé."),
+     *              @OA\Property(property="success", type="boolean", example=false)
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="Validation failed."),
+     *              @OA\Property(property="success", type="boolean", example=false)
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Internal Server Error",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="Échec du blocage du compte."),
+     *              @OA\Property(property="success", type="boolean", example=false)
+     *          )
+     *      )
+     * )
+     */
+    public function block(BlocageCompteRequest $request, int $id): JsonResponse
+    {
+        $compte = Compte::find($id);
+
+        if (!$compte) {
+            return $this->error(
+                CompteValide::errorMessages()['compte_not_found'],
+                CompteValide::httpStatusCodes()['not_found']
+            );
+        }
+
+        // Vérifier si le compte est expiré et le débloquer automatiquement si nécessaire
+        $compte->checkAndUnblockExpired();
+
+        if ($compte->statut === 'bloque') {
+            return $this->error(
+                CompteValide::errorMessages()['compte_already_blocked'],
+                CompteValide::httpStatusCodes()['conflict']
+            );
+        }
+
+        try {
+            $motif = $request->input('motif');
+            $duree = $request->input('duree');
+            $unite = $request->input('unite');
+
+            // Calculer la date de déblocage prévue
+            $dateDeblocagePrevue = now();
+            switch ($unite) {
+                case 'jour':
+                case 'jours':
+                    $dateDeblocagePrevue = $dateDeblocagePrevue->addDays($duree);
+                    break;
+                case 'semaine':
+                case 'semaines':
+                    $dateDeblocagePrevue = $dateDeblocagePrevue->addWeeks($duree);
+                    break;
+                case 'mois':
+                    $dateDeblocagePrevue = $dateDeblocagePrevue->addMonths($duree);
+                    break;
+                case 'annee':
+                case 'annees':
+                    $dateDeblocagePrevue = $dateDeblocagePrevue->addYears($duree);
+                    break;
+            }
+
+            $compte->statut = 'bloque';
+            $compte->motifBlocage = $motif;
+            $compte->dateBlocage = now();
+            $compte->dateDeblocagePrevue = $dateDeblocagePrevue;
+            $compte->save();
+
+            return $this->success(
+                [
+                    'id' => $compte->id,
+                    'statut' => $compte->statut,
+                    'motifBlocage' => $compte->motifBlocage,
+                    'dateBlocage' => $compte->dateBlocage->toIso8601String(),
+                    'dateDeblocagePrevue' => $compte->dateDeblocagePrevue->toIso8601String(),
+                ],
+                CompteValide::successMessages()['compte_blocked'],
+                CompteValide::httpStatusCodes()['success']
+            );
+        } catch (\Exception $e) {
+            \Log::error("Failed to block compte: " . $e->getMessage());
+            return $this->error(
+                CompteValide::errorMessages()['failed_to_block_compte'],
+                CompteValide::httpStatusCodes()['internal_server_error']
+            );
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *      path="/api/v1/{api_name}/comptes/{id}/debloquer",
+     *      operationId="unblockCompte",
+     *      tags={"Comptes"},
+     *      summary="Unblock a specific compte",
+     *      description="Unblocks a compte by its ID with a motif",
+     *      @OA\Parameter(
+     *          name="api_name",
+     *          in="path",
+     *          description="Dynamic API name from config",
+     *          required=true,
+     *          @OA\Schema(type="string", default="die.niang")
+     *      ),
+     *      @OA\Parameter(
+     *          name="id",
+     *          in="path",
+     *          description="ID of the compte to unblock",
+     *          required=true,
+     *          @OA\Schema(type="integer", format="int64")
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          @OA\JsonContent(
+     *              type="object",
+     *              required={"motif"},
+     *              @OA\Property(property="motif", type="string", example="Vérification complétée")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Compte unblocked successfully",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="success", type="boolean", example=true),
+     *              @OA\Property(property="message", type="string", example="Compte débloqué avec succès"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="string", format="uuid", example="550e8400-e29b-41d4-a716-446655440000"),
+     *                  @OA\Property(property="statut", type="string", example="actif"),
+     *                  @OA\Property(property="dateDeblocage", type="string", format="date-time", example="2025-10-19T12:00:00Z")
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Compte not found",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="Compte non trouvé."),
+     *              @OA\Property(property="success", type="boolean", example=false)
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="Validation failed."),
+     *              @OA\Property(property="success", type="boolean", example=false)
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Internal Server Error",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="Échec du déblocage du compte."),
+     *              @OA\Property(property="success", type="boolean", example=false)
+     *          )
+     *      )
+     * )
+     */
+    public function unblock(DeblocageCompteRequest $request, int $id): JsonResponse
+    {
+        $compte = Compte::find($id);
+
+        if (!$compte) {
+            return $this->error(
+                CompteValide::errorMessages()['compte_not_found'],
+                CompteValide::httpStatusCodes()['not_found']
+            );
+        }
+
+        // Vérifier si le compte est expiré et le débloquer automatiquement si nécessaire
+        $compte->checkAndUnblockExpired();
+
+        if ($compte->statut !== 'bloque') {
+            return $this->error(
+                CompteValide::errorMessages()['compte_not_blocked'],
+                CompteValide::httpStatusCodes()['conflict']
+            );
+        }
+
+        try {
+            $compte->statut = 'actif';
+            $compte->motifBlocage = null;
+            $compte->dateBlocage = null;
+            $compte->dateDeblocagePrevue = null;
+            $compte->derniereModification = now();
+            $compte->save();
+
+            return $this->success(
+                [
+                    'id' => $compte->id,
+                    'statut' => $compte->statut,
+                    'dateDeblocage' => now()->toIso8601String(),
+                ],
+                CompteValide::successMessages()['compte_unblocked'],
+                CompteValide::httpStatusCodes()['success']
+            );
+        } catch (\Exception $e) {
+            \Log::error("Failed to unblock compte: " . $e->getMessage());
+            return $this->error(
+                CompteValide::errorMessages()['failed_to_unblock_compte'],
+                CompteValide::httpStatusCodes()['internal_server_error']
             );
         }
     }
