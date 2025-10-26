@@ -23,6 +23,7 @@ class CompteResource extends JsonResource
             'devise' => $this->devise,
             'dateCreation' => $this->dateCreation->toIso8601String(),
             'statut' => $this->statut,
+            'dateFermeture' => $this->when($this->statut === 'ferme', $this->dateFermeture ? $this->dateFermeture->toIso8601String() : null),
             'metadata' => [
                 'derniereModification' => $this->derniereModification ? $this->derniereModification->toIso8601String() : null,
                 'version' => $this->version,

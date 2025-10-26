@@ -20,6 +20,7 @@ class Compte extends Model
         'statut',
         'derniereModification',
         'version',
+        'dateFermeture',
     ];
 
     /**
@@ -36,6 +37,7 @@ class Compte extends Model
     protected $casts = [
         'dateCreation' => 'date',
         'derniereModification' => 'datetime',
+        'dateFermeture' => 'datetime',
     ];
 
     // Relation avec Client

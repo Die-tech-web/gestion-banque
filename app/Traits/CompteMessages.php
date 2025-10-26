@@ -18,4 +18,14 @@ trait CompteMessages
     {
         return 'Comptes archivés récupérés avec succès';
     }
+
+    protected function compteDeletedSuccessfully(): string
+    {
+        return 'Compte supprimé avec succès';
+    }
+
+    protected function failedToDeleteCompte(): string
+    {
+        return 'Échec de la suppression du compte.';
+    }
 }

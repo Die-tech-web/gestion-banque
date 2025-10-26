@@ -414,13 +414,13 @@ class CompteController extends Controller
      *      )
      * )
      */
+    
     public function getArchivedComptes(CompteListRequest $request): JsonResponse
     {
         $limit = $request->get('limit', 10);
         $comptes = Compte::where('archived', true)->applyFiltersAndPagination($request)->paginate($limit);
 
         return $this->success(
-            $comptes, // Pass the paginator directly
             $comptes, // Pass the paginator directly
             $this->archivedComptesRetrievedSuccessfully(),
             Response::HTTP_OK
@@ -499,6 +499,98 @@ class CompteController extends Controller
         } catch (\Exception $e) {
             return $this->error(
                 $this->failedToArchiveCompte(),
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    /**
+     * @OA\Delete(
+     *      path="/api/v1/{api_name}/comptes/{id}",
+     *      operationId="deleteCompte",
+     *      tags={"Comptes"},
+     *      summary="Soft delete a specific compte",
+     *      description="Soft deletes a compte by its ID, marking its status as 'ferme' and setting dateFermeture.",
+     *      @OA\Parameter(
+     *          name="api_name",
+     *          in="path",
+     *          description="Dynamic API name from config",
+     *          required=true,
+     *          @OA\Schema(type="string", default="die.niang")
+     *      ),
+     *      @OA\Parameter(
+     *          name="id",
+     *          in="path",
+     *          description="ID of the compte to soft delete",
+     *          required=true,
+     *          @OA\Schema(type="integer", format="int64")
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Compte deleted successfully",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="success", type="boolean", example=true),
+     *              @OA\Property(property="message", type="string", example="Compte supprimé avec succès"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="string", format="uuid", example="550e8400-e29b-41d4-a716-446655440000"),
+     *                  @OA\Property(property="numeroCompte", type="string", example="C00123456"),
+     *                  @OA\Property(property="statut", type="string", example="ferme"),
+     *                  @OA\Property(property="dateFermeture", type="string", format="date-time", example="2025-10-19T11:15:00Z")
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Compte not found",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="Compte non trouvé."),
+     *              @OA\Property(property="success", type="boolean", example=false)
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Internal Server Error",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="Échec de la suppression du compte."),
+     *              @OA\Property(property="success", type="boolean", example=false)
+     *          )
+     *      )
+     * )
+     */
+    public function destroy(int $id): JsonResponse
+    {
+        $compte = Compte::find($id);
+
+        if (!$compte) {
+            return $this->error(
+                $this->compteNotFound(),
+                Response::HTTP_NOT_FOUND
+            );
+        }
+
+        try {
+            $compte->statut = 'ferme';
+            $compte->dateFermeture = now();
+            $compte->save();
+            $compte->delete();
+
+            return $this->success(
+                [
+                    'id' => $compte->id,
+                    'numeroCompte' => $compte->numeroCompte,
+                    'statut' => $compte->statut,
+                    'dateFermeture' => $compte->dateFermeture->toIso8601String(),
+                ],
+                $this->compteDeletedSuccessfully(),
+                Response::HTTP_OK
+            );
+        } catch (\Exception $e) {
+            \Log::error("Failed to delete compte: " . $e->getMessage());
+            return $this->error(
+                $this->failedToDeleteCompte(),
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }

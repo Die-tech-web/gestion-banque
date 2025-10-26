@@ -23,6 +23,7 @@ Route::apiResource('comptes', CompteController::class)->only(['index']);
 Route::get('/comptes/non-archives', [CompteController::class, 'getNonArchivedComptes']);
 Route::get('/comptes/archives', [CompteController::class, 'getArchivedComptes']);
 Route::post('/comptes/{id}/archiver', [CompteController::class, 'archiveCompte']);
+Route::delete('/comptes/{id}', [CompteController::class, 'destroy']);
 
 Route::get('/test', function () {
     return response()->json(['message' => 'Test route works!']);

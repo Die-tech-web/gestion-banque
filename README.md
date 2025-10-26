@@ -121,6 +121,7 @@ La personnalisation de l'URL de base pour les endpoints API est gérée dans les
 *   **Obtenir les comptes non archivés :** `http://127.0.0.1:8000/api/v1/die.niang/comptes/non-archives`
 *   **Obtenir les comptes archivés :** `http://127.0.0.1:8000/api/v1/die.niang/comptes/archives`
 *   **Route de test :** `http://127.0.0.1:8000/api/v1/die.niang/test`
+*   **Supprimer un compte (Soft Delete) :** `DELETE http://127.0.0.1:8000/api/v1/die.niang/comptes/{id}` (Remplacez `{id}` par l'ID réel du compte)
 
 ### 3. Configuration de la Documentation Swagger
 
