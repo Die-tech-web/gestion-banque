@@ -29,6 +29,10 @@ class RouteServiceProvider extends ServiceProvider
         });
 
         $this->routes(function () {
+            // Route de connexion publique sans prefix
+            Route::middleware('api')
+                ->post('/api/login', 'App\Http\Controllers\AuthController@login');
+
             // Routes API avec prefix dynamique
             Route::middleware('api')
                 ->prefix('api/v1/' . config('api.name'))

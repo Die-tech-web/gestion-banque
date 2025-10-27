@@ -23,13 +23,14 @@ use App\Models\User;
 // Route de connexion publique
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/v1/die.niang/login', [AuthController::class, 'login']);
+Route::post('/api/v1/die.niang/login', [AuthController::class, 'login']);
 
 Route::middleware(['auth.api_cookie'])->group(function () {
     Route::middleware(['auth:api'])->group(function () {
         Route::middleware(['App\Http\Middleware\LoggingMiddleware'])->group(function () {
-            Route::apiResource('comptes', CompteController::class)->only(['index', 'show']);
             Route::get('/comptes/non-archives', [CompteController::class, 'getNonArchivedComptes']);
             Route::get('/comptes/archives', [CompteController::class, 'getArchivedComptes']);
+            Route::apiResource('comptes', CompteController::class)->only(['index', 'show']);
             Route::post('/comptes/{id}/archiver', [CompteController::class, 'archiveCompte']);
             Route::post('/comptes/{id}/bloquer', [CompteController::class, 'block']);
             Route::post('/comptes/{id}/debloquer', [CompteController::class, 'unblock']);

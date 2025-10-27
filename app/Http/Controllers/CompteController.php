@@ -842,7 +842,7 @@ class CompteController extends Controller
      *      )
      * )
      */
-    public function show(int $id): JsonResponse
+    public function show($id): JsonResponse
     {
         $compte = Compte::with(['client.user', 'transactions'])->find($id);
 
