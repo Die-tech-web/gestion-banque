@@ -12,7 +12,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @OA\Tag(
@@ -120,7 +119,7 @@ class CompteCreationController extends Controller
         // Vérifier que l'utilisateur authentifié est un admin
         $user = auth()->user();
         if (!$user || !$user->admin) {
-            return $this->error('Accès non autorisé. Seuls les administrateurs peuvent créer des comptes.', 403);
+            return $this->error(CompteValide::errorMessages()['unauthorized'], CompteValide::httpStatusCodes()['forbidden']);
         }
 
         DB::beginTransaction();
@@ -196,7 +195,7 @@ class CompteCreationController extends Controller
                     'derniereModification' => $compte->derniereModification->toIso8601String(),
                     'version' => $compte->version,
                 ],
-            ], \App\Rules\ApiMessages::compteSuccessMessages()['compte_created'], Response::HTTP_CREATED);
+            ], CompteValide::successMessages()['compte_created'], CompteValide::httpStatusCodes()['created']);
 
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
@@ -205,27 +204,27 @@ class CompteCreationController extends Controller
             if ($e->getCode() == 23000) {
                 return $this->error(
                     'Une erreur de contrainte d\'unicité s\'est produite. Vérifiez que l\'email, le téléphone ou le NCI ne sont pas déjà utilisés.',
-                    Response::HTTP_UNPROCESSABLE_ENTITY
+                    CompteValide::httpStatusCodes()['bad_request']
                 );
             }
 
             return $this->error(
-                \App\Rules\ApiMessages::compteErrorMessages()['unexpected_error'],
-                Response::HTTP_INTERNAL_SERVER_ERROR
+                CompteValide::errorMessages()['unexpected_error'],
+                CompteValide::httpStatusCodes()['internal_server_error']
             );
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
 
             return $this->error(
                 'Données de validation invalides: ' . $e->getMessage(),
-                Response::HTTP_UNPROCESSABLE_ENTITY
+                CompteValide::httpStatusCodes()['bad_request']
             );
         } catch (\Exception $e) {
             DB::rollBack();
 
             return $this->error(
-                \App\Rules\ApiMessages::compteErrorMessages()['unexpected_error'],
-                Response::HTTP_INTERNAL_SERVER_ERROR
+                CompteValide::errorMessages()['unexpected_error'],
+                CompteValide::httpStatusCodes()['internal_server_error']
             );
         }
     }

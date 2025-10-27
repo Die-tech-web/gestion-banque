@@ -66,6 +66,7 @@ class CompteValide implements ValidationRule
     public static function successMessages(): array
     {
         return [
+            'compte_created' => 'Compte créé avec succès. Un email avec les informations de connexion a été envoyé au client.',
             'comptes_retrieved' => 'Comptes récupérés avec succès',
             'non_archived_comptes_retrieved' => 'Comptes non archivés récupérés avec succès',
             'archived_comptes_retrieved' => 'Comptes archivés récupérés avec succès',
@@ -93,6 +94,10 @@ class CompteValide implements ValidationRule
             'failed_to_block_compte' => 'Échec du blocage du compte.',
             'compte_not_blocked' => 'Le compte n\'est pas bloqué.',
             'failed_to_unblock_compte' => 'Échec du déblocage du compte.',
+            'unauthorized' => 'Accès non autorisé.',
+            'client_not_found' => 'Client non trouvé.',
+            'unauthorized_compte_access' => 'Accès non autorisé à ce compte.',
+            'unexpected_error' => 'Une erreur inattendue s\'est produite lors de la création du compte',
         ];
     }
 
@@ -105,6 +110,10 @@ class CompteValide implements ValidationRule
     {
         return [
             'success' => 200,
+            'created' => 201,
+            'bad_request' => 400,
+            'unauthorized' => 401,
+            'forbidden' => 403,
             'not_found' => 404,
             'conflict' => 409,
             'internal_server_error' => 500,

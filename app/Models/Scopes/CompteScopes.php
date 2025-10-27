@@ -57,6 +57,41 @@ trait CompteScopes
     }
 
     /**
+     * Scope to filter comptes by user permissions (admin sees all, client sees only their own).
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  \Illuminate\Contracts\Auth\Authenticatable  $user
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeApplyUserPermissions(Builder $query, $user): Builder
+    {
+        $isAdmin = $user->admin()->exists();
+
+        if (!$isAdmin) {
+            $client = $user->client;
+            if (!$client) {
+                // Return empty query if client doesn't exist
+                return $query->whereRaw('1 = 0');
+            }
+            $query->where('client_id', $client->id);
+        }
+
+        return $query;
+    }
+
+    /**
+     * Scope to filter comptes by archived status.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  bool  $archived
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeByArchivedStatus(Builder $query, bool $archived): Builder
+    {
+        return $query->where('archived', $archived);
+    }
+
+    /**
      * Scope a query to retrieve a Compte by its account number.
      *
      * @param  \Illuminate\Database\Eloquent\Builder  $query

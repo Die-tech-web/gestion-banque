@@ -50,4 +50,44 @@ trait CompteMessages
     {
         return CompteValide::errorMessages()['failed_to_archive_compte'];
     }
+
+    protected function compteBlockedSuccessfully(): string
+    {
+        return CompteValide::successMessages()['compte_blocked'];
+    }
+
+    protected function failedToBlockCompte(): string
+    {
+        return CompteValide::errorMessages()['failed_to_block_compte'];
+    }
+
+    protected function compteAlreadyBlocked(): string
+    {
+        return CompteValide::errorMessages()['compte_already_blocked'];
+    }
+
+    protected function compteDetailsRetrievedSuccessfully(): string
+    {
+        return CompteValide::successMessages()['compte_details_retrieved'];
+    }
+
+    protected function unauthorizedCompteAccess(): string
+    {
+        return CompteValide::errorMessages()['unauthorized_compte_access'];
+    }
+
+    protected function compteUnblockedSuccessfully(): string
+    {
+        return CompteValide::successMessages()['compte_unblocked'];
+    }
+
+    protected function failedToUnblockCompte(): string
+    {
+        return CompteValide::errorMessages()['failed_to_unblock_compte'];
+    }
+
+    protected function compteNotBlocked(): string
+    {
+        return CompteValide::errorMessages()['compte_not_blocked'];
+    }
 }
