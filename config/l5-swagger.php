@@ -100,7 +100,13 @@ return [
         ],
 
         'securityDefinitions' => [
-            'securitySchemes' => [],
+            'securitySchemes' => [
+                'bearerAuth' => [
+                    'type' => 'http',
+                    'scheme' => 'bearer',
+                    'bearerFormat' => 'JWT',
+                ],
+            ],
             'security' => [],
         ],
 

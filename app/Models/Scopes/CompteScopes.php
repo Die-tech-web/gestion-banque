@@ -45,9 +45,7 @@ trait CompteScopes
                 ->orderBy('users.name', $order)
                 ->select('comptes.*'); // Select comptes columns to avoid ambiguity
         } elseif ($sort === 'solde') {
-            // Sorting by calculated balance is complex and usually done in application logic or a view/materialized view
-            // For simplicity, we'll skip direct DB sorting by 'solde' here, or assume it's handled post-collection if needed.
-            // For now, we'll default to dateCreation if solde is requested for DB sort.
+            
             $query->orderBy('dateCreation', $order);
         } else {
             $query->orderBy($sort, $order);

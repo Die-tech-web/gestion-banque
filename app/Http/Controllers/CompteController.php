@@ -176,6 +176,7 @@ class CompteController extends Controller
      *      tags={"Comptes"},
      *      summary="Get list of comptes",
      *      description="Returns list of comptes",
+     *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *          name="api_name",
      *          in="path",
@@ -262,12 +263,12 @@ class CompteController extends Controller
         $user = Auth::user();
         $limit = $request->get('limit', 10);
 
-        $comptes = Compte::applyUserPermissions($user)
+        $comptes = Compte::withTrashed()->applyUserPermissions($user)
             ->applyFiltersAndPagination($request)
             ->paginate($limit);
 
         return $this->success(
-            $comptes, // Pass the paginator directly
+            $comptes, // Pass the paginator directly for automatic pagination handling
             $this->comptesRetrievedSuccessfully(),
             CompteValide::httpStatusCodes()['success']
         );
@@ -365,7 +366,7 @@ class CompteController extends Controller
             ->paginate($limit);
 
         return $this->success(
-            $comptes, // Pass the paginator directly
+            $comptes, // Pass the paginator directly for automatic pagination handling
             $this->nonArchivedComptesRetrievedSuccessfully(),
             CompteValide::httpStatusCodes()['success']
         );
@@ -461,7 +462,7 @@ class CompteController extends Controller
             ->paginate($limit);
 
         return $this->success(
-            $comptes, // Pass the paginator directly
+            $comptes, // Pass the paginator directly for automatic pagination handling
             $this->archivedComptesRetrievedSuccessfully(),
             CompteValide::httpStatusCodes()['success']
         );
@@ -474,6 +475,7 @@ class CompteController extends Controller
      *      tags={"Comptes"},
      *      summary="Archive a specific compte",
      *      description="Archives a compte by its ID",
+     *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *          name="api_name",
      *          in="path",
@@ -551,6 +553,7 @@ class CompteController extends Controller
      *      tags={"Comptes"},
      *      summary="Soft delete a specific compte",
      *      description="Soft deletes a compte by its ID, marking its status as 'ferme' and setting dateFermeture.",
+     *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *          name="api_name",
      *          in="path",
@@ -650,6 +653,7 @@ class CompteController extends Controller
      *      tags={"Comptes"},
      *      summary="Block a specific compte",
      *      description="Blocks a compte by its ID with a motif and duration",
+     *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *          name="api_name",
      *          in="path",
@@ -798,6 +802,7 @@ class CompteController extends Controller
      *      tags={"Comptes"},
      *      summary="Get a specific compte",
      *      description="Returns details of a specific compte by its ID",
+     *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *          name="api_name",
      *          in="path",
@@ -878,6 +883,7 @@ class CompteController extends Controller
      *      tags={"Comptes"},
      *      summary="Unblock a specific compte",
      *      description="Unblocks a compte by its ID with a motif",
+     *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *          name="api_name",
      *          in="path",
