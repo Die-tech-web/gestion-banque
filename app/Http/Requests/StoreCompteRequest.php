@@ -13,7 +13,8 @@ class StoreCompteRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true; // Admin peut créer des comptes
+        // Vérifier que l'utilisateur est authentifié et est un admin
+        return auth()->check() && auth()->user() && auth()->user()->admin()->exists();
     }
 
     /**
@@ -44,31 +45,6 @@ class StoreCompteRequest extends FormRequest
      */
     public function messages(): array
     {
-        return [
-            'type.required' => 'Le type de compte est obligatoire.',
-            'type.in' => 'Le type de compte doit être cheque ou epargne.',
-            'soldeInitial.required' => 'Le solde initial est obligatoire.',
-            'soldeInitial.numeric' => 'Le solde initial doit être un nombre.',
-            'soldeInitial.min' => 'Le solde initial doit être d\'au moins 10 000.',
-            'devise.required' => 'La devise est obligatoire.',
-            'devise.in' => 'La devise doit être FCFA, USD ou EUR.',
-            'client.required' => 'Les informations du client sont obligatoires.',
-            'client.array' => 'Les informations du client doivent être un tableau.',
-            'client.id.integer' => 'L\'ID du client doit être un entier.',
-            'client.id.exists' => 'Le client spécifié n\'existe pas.',
-            'client.titulaire.required_if' => 'Le nom du titulaire est requis pour un nouveau client.',
-            'client.titulaire.string' => 'Le nom du titulaire doit être une chaîne de caractères.',
-            'client.titulaire.max' => 'Le nom du titulaire ne peut pas dépasser 255 caractères.',
-            'client.nci.required_if' => 'Le numéro national sénégalais est requis pour un nouveau client.',
-            'client.nci.unique' => 'Ce numéro national sénégalais est déjà utilisé.',
-            'client.email.required_if' => 'L\'email est requis pour un nouveau client.',
-            'client.email.email' => 'L\'email doit être valide.',
-            'client.email.unique' => 'Cet email est déjà utilisé.',
-            'client.telephone.required_if' => 'Le numéro de téléphone est requis pour un nouveau client.',
-            'client.telephone.unique' => 'Ce numéro de téléphone est déjà utilisé.',
-            'client.adresse.required_if' => 'L\'adresse est requise pour un nouveau client.',
-            'client.adresse.string' => 'L\'adresse doit être une chaîne de caractères.',
-            'client.adresse.max' => 'L\'adresse ne peut pas dépasser 500 caractères.',
-        ];
+        return \App\Rules\ApiMessages::compteValidationMessages();
     }
 }

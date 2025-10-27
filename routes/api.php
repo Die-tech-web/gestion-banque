@@ -19,15 +19,13 @@ use App\Models\User;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
 
 // Route de connexion publique
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/v1/die.niang/login', [AuthController::class, 'login']);
 
-Route::middleware(['auth:api'])->group(function () {
-    Route::middleware(['auth.api_cookie'])->group(function () {
+Route::middleware(['auth.api_cookie'])->group(function () {
+    Route::middleware(['auth:api'])->group(function () {
         Route::middleware(['App\Http\Middleware\LoggingMiddleware'])->group(function () {
             Route::apiResource('comptes', CompteController::class)->only(['index', 'show']);
             Route::get('/comptes/non-archives', [CompteController::class, 'getNonArchivedComptes']);
@@ -41,10 +39,13 @@ Route::middleware(['auth:api'])->group(function () {
 });
 
 // Route séparée pour la création de compte (admin seulement)
-Route::middleware(['auth:api'])->middleware(['auth.api_cookie'])->middleware(['App\Http\Middleware\LoggingMiddleware'])->post('/comptes', [App\Http\Controllers\CompteCreationController::class, 'store']);
+Route::middleware(['auth.api_cookie'])->middleware(['auth:api'])->middleware(['App\Http\Middleware\LoggingMiddleware'])->post('/comptes', [App\Http\Controllers\CompteCreationController::class, 'store']);
+
+// Route pour créer des comptes avec authentification
+Route::middleware(['auth.api_cookie'])->middleware(['auth:api'])->middleware(['App\Http\Middleware\LoggingMiddleware'])->post('/v1/die.niang/comptes', [App\Http\Controllers\CompteCreationController::class, 'store']);
 
 // Route pour créer des comptes sans authentification (pour les tests)
-Route::post('/comptes/test', [App\Http\Controllers\CompteCreationController::class, 'storeTest']);
+Route::post('/v1/die.niang/comptes/test', [App\Http\Controllers\CompteCreationController::class, 'storeTest']);
 
 Route::get('/test', function () {
     return response()->json(['message' => 'Test route works!']);

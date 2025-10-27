@@ -270,15 +270,15 @@ class CompteController extends Controller
             // Client voit seulement ses propres comptes
             $client = $user->client;
             if (!$client) {
-                return $this->error('Accès non autorisé', 403);
+                return $this->error(\App\Rules\ApiMessages::compteErrorMessages()['unauthorized'], \App\Rules\ApiMessages::httpStatusCodes()['forbidden']);
             }
             $comptes = Compte::where('client_id', $client->id)->applyFiltersAndPagination($request)->paginate($limit);
         }
 
         return $this->success(
             $comptes, // Pass the paginator directly
-            CompteValide::successMessages()['comptes_retrieved'],
-            CompteValide::httpStatusCodes()['success']
+            \App\Rules\ApiMessages::compteSuccessMessages()['comptes_retrieved'],
+            \App\Rules\ApiMessages::httpStatusCodes()['success']
         );
     }
 
@@ -377,15 +377,15 @@ class CompteController extends Controller
             // Client voit seulement ses propres comptes non archivés
             $client = $user->client;
             if (!$client) {
-                return $this->error('Accès non autorisé', 403);
+                return $this->error(\App\Rules\ApiMessages::compteErrorMessages()['unauthorized'], \App\Rules\ApiMessages::httpStatusCodes()['forbidden']);
             }
             $comptes = Compte::where('client_id', $client->id)->where('archived', false)->applyFiltersAndPagination($request)->paginate($limit);
         }
 
         return $this->success(
             $comptes, // Pass the paginator directly
-            CompteValide::successMessages()['non_archived_comptes_retrieved'],
-            CompteValide::httpStatusCodes()['success']
+            \App\Rules\ApiMessages::compteSuccessMessages()['non_archived_comptes_retrieved'],
+            \App\Rules\ApiMessages::httpStatusCodes()['success']
         );
     }
 
@@ -482,15 +482,15 @@ class CompteController extends Controller
             // Client voit seulement ses propres comptes archivés
             $client = $user->client;
             if (!$client) {
-                return $this->error('Client non trouvé', 404);
+                return $this->error(\App\Rules\ApiMessages::compteErrorMessages()['client_not_found'], \App\Rules\ApiMessages::httpStatusCodes()['not_found']);
             }
             $comptes = Compte::where('client_id', $client->id)->where('archived', true)->applyFiltersAndPagination($request)->paginate($limit);
         }
 
         return $this->success(
             $comptes, // Pass the paginator directly
-            CompteValide::successMessages()['archived_comptes_retrieved'],
-            CompteValide::httpStatusCodes()['success']
+            \App\Rules\ApiMessages::compteSuccessMessages()['archived_comptes_retrieved'],
+            \App\Rules\ApiMessages::httpStatusCodes()['success']
         );
     }
 
@@ -550,8 +550,8 @@ class CompteController extends Controller
 
         if (!$compte) {
             return $this->error(
-                CompteValide::errorMessages()['compte_not_found'],
-                CompteValide::httpStatusCodes()['not_found']
+                \App\Rules\ApiMessages::compteErrorMessages()['compte_not_found'],
+                \App\Rules\ApiMessages::httpStatusCodes()['not_found']
             );
         }
 
@@ -560,13 +560,13 @@ class CompteController extends Controller
             $compte->save();
             return $this->success(
                 null,
-                CompteValide::successMessages()['compte_archived'],
-                CompteValide::httpStatusCodes()['success']
+                \App\Rules\ApiMessages::compteSuccessMessages()['compte_archived'],
+                \App\Rules\ApiMessages::httpStatusCodes()['success']
             );
         } catch (\Exception $e) {
             return $this->error(
-                CompteValide::errorMessages()['failed_to_archive_compte'],
-                CompteValide::httpStatusCodes()['internal_server_error']
+                \App\Rules\ApiMessages::compteErrorMessages()['failed_to_archive_compte'],
+                \App\Rules\ApiMessages::httpStatusCodes()['internal_server_error']
             );
         }
     }
@@ -633,15 +633,15 @@ class CompteController extends Controller
 
         if (!$compte) {
             return $this->error(
-                CompteValide::errorMessages()['compte_not_found'],
-                CompteValide::httpStatusCodes()['not_found']
+                \App\Rules\ApiMessages::compteErrorMessages()['compte_not_found'],
+                \App\Rules\ApiMessages::httpStatusCodes()['not_found']
             );
         }
 
         if ($compte->trashed()) {
             return $this->error(
-                CompteValide::errorMessages()['compte_already_deleted'],
-                CompteValide::httpStatusCodes()['conflict']
+                \App\Rules\ApiMessages::compteErrorMessages()['compte_already_deleted'],
+                \App\Rules\ApiMessages::httpStatusCodes()['conflict']
             );
         }
 
@@ -658,14 +658,14 @@ class CompteController extends Controller
                     'statut' => $compte->statut,
                     'dateFermeture' => $compte->dateFermeture ? $compte->dateFermeture->toIso8601String() : null,
                 ],
-                CompteValide::successMessages()['compte_deleted'],
-                CompteValide::httpStatusCodes()['success']
+                \App\Rules\ApiMessages::compteSuccessMessages()['compte_deleted'],
+                \App\Rules\ApiMessages::httpStatusCodes()['success']
             );
         } catch (\Exception $e) {
             \Log::error("Failed to delete compte: " . $e->getMessage());
             return $this->error(
-                CompteValide::errorMessages()['failed_to_delete_compte'],
-                CompteValide::httpStatusCodes()['internal_server_error']
+                \App\Rules\ApiMessages::compteErrorMessages()['failed_to_delete_compte'],
+                \App\Rules\ApiMessages::httpStatusCodes()['internal_server_error']
             );
         }
     }
@@ -752,8 +752,8 @@ class CompteController extends Controller
 
         if (!$compte) {
             return $this->error(
-                CompteValide::errorMessages()['compte_not_found'],
-                CompteValide::httpStatusCodes()['not_found']
+                \App\Rules\ApiMessages::compteErrorMessages()['compte_not_found'],
+                \App\Rules\ApiMessages::httpStatusCodes()['not_found']
             );
         }
 
@@ -762,8 +762,8 @@ class CompteController extends Controller
 
         if ($compte->statut === 'bloque') {
             return $this->error(
-                CompteValide::errorMessages()['compte_already_blocked'],
-                CompteValide::httpStatusCodes()['conflict']
+                \App\Rules\ApiMessages::compteErrorMessages()['compte_already_blocked'],
+                \App\Rules\ApiMessages::httpStatusCodes()['conflict']
             );
         }
 
@@ -806,14 +806,14 @@ class CompteController extends Controller
                     'dateBlocage' => $compte->dateBlocage->toIso8601String(),
                     'dateDeblocagePrevue' => $compte->dateDeblocagePrevue->toIso8601String(),
                 ],
-                CompteValide::successMessages()['compte_blocked'],
-                CompteValide::httpStatusCodes()['success']
+                \App\Rules\ApiMessages::compteSuccessMessages()['compte_blocked'],
+                \App\Rules\ApiMessages::httpStatusCodes()['success']
             );
         } catch (\Exception $e) {
             \Log::error("Failed to block compte: " . $e->getMessage());
             return $this->error(
-                CompteValide::errorMessages()['failed_to_block_compte'],
-                CompteValide::httpStatusCodes()['internal_server_error']
+                \App\Rules\ApiMessages::compteErrorMessages()['failed_to_block_compte'],
+                \App\Rules\ApiMessages::httpStatusCodes()['internal_server_error']
             );
         }
     }
@@ -886,15 +886,15 @@ class CompteController extends Controller
         // Vérifier les permissions : admin voit tous les comptes, client seulement les siens
         if (!$isAdmin && $compte->client_id !== $user->client->id) {
             return $this->error(
-                'Accès non autorisé à ce compte.',
-                403
+                \App\Rules\ApiMessages::compteErrorMessages()['unauthorized_compte_access'],
+                \App\Rules\ApiMessages::httpStatusCodes()['forbidden']
             );
         }
 
         return $this->success(
             new CompteResource($compte),
-            CompteValide::successMessages()['compte_details_retrieved'],
-            CompteValide::httpStatusCodes()['success']
+            \App\Rules\ApiMessages::compteSuccessMessages()['compte_details_retrieved'],
+            \App\Rules\ApiMessages::httpStatusCodes()['success']
         );
     }
 
@@ -986,8 +986,8 @@ class CompteController extends Controller
 
         if ($compte->statut !== 'bloque') {
             return $this->error(
-                CompteValide::errorMessages()['compte_not_blocked'],
-                CompteValide::httpStatusCodes()['conflict']
+                \App\Rules\ApiMessages::compteErrorMessages()['compte_not_blocked'],
+                \App\Rules\ApiMessages::httpStatusCodes()['conflict']
             );
         }
 
@@ -1005,14 +1005,14 @@ class CompteController extends Controller
                     'statut' => $compte->statut,
                     'dateDeblocage' => now()->toIso8601String(),
                 ],
-                CompteValide::successMessages()['compte_unblocked'],
-                CompteValide::httpStatusCodes()['success']
+                \App\Rules\ApiMessages::compteSuccessMessages()['compte_unblocked'],
+                \App\Rules\ApiMessages::httpStatusCodes()['success']
             );
         } catch (\Exception $e) {
             \Log::error("Failed to unblock compte: " . $e->getMessage());
             return $this->error(
-                CompteValide::errorMessages()['failed_to_unblock_compte'],
-                CompteValide::httpStatusCodes()['internal_server_error']
+                \App\Rules\ApiMessages::compteErrorMessages()['failed_to_unblock_compte'],
+                \App\Rules\ApiMessages::httpStatusCodes()['internal_server_error']
             );
         }
     }

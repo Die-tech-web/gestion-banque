@@ -2,6 +2,12 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Config;
+use Laravel\Passport\Http\Controllers\AccessTokenController;
+use Laravel\Passport\Http\Controllers\AuthorizedAccessTokenController;
+use Laravel\Passport\Http\Controllers\ClientController;
+use Laravel\Passport\Http\Controllers\PersonalAccessTokenController;
+use Laravel\Passport\Http\Controllers\ScopeController;
+use Laravel\Passport\Http\Controllers\TransientTokenController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,6 +28,21 @@ Route::get('/api/v1/{name}/documentation', function ($name) {
     Config::set('l5-swagger.defaults.paths.base', '/api/v1/' . $name);
     return redirect('/api/documentation');
 });
+
+// OAuth routes
+Route::post('/oauth/token', [AccessTokenController::class, 'issueToken']);
+Route::get('/oauth/authorize', [AccessTokenController::class, 'authorize']);
+Route::post('/oauth/authorize', [AccessTokenController::class, 'approve']);
+Route::delete('/oauth/tokens/{token_id}', [AuthorizedAccessTokenController::class, 'destroy']);
+Route::get('/oauth/clients', [ClientController::class, 'index']);
+Route::post('/oauth/clients', [ClientController::class, 'store']);
+Route::put('/oauth/clients/{client_id}', [ClientController::class, 'update']);
+Route::delete('/oauth/clients/{client_id}', [ClientController::class, 'destroy']);
+Route::get('/oauth/scopes', [ScopeController::class, 'index']);
+Route::get('/oauth/personal-access-tokens', [PersonalAccessTokenController::class, 'index']);
+Route::post('/oauth/personal-access-tokens', [PersonalAccessTokenController::class, 'store']);
+Route::delete('/oauth/personal-access-tokens/{token_id}', [PersonalAccessTokenController::class, 'destroy']);
+Route::get('/oauth/transient', [TransientTokenController::class, 'index']);
 
 
 // use Illuminate\Support\Facades\Route;

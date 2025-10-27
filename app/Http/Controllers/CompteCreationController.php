@@ -8,6 +8,7 @@ use App\Models\Client;
 use App\Models\Compte;
 use App\Models\User;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -116,6 +117,12 @@ class CompteCreationController extends Controller
      */
     public function store(StoreCompteRequest $request)
     {
+        // Vérifier que l'utilisateur authentifié est un admin
+        $user = auth()->user();
+        if (!$user || !$user->admin) {
+            return $this->error('Accès non autorisé. Seuls les administrateurs peuvent créer des comptes.', 403);
+        }
+
         DB::beginTransaction();
 
         try {
@@ -189,22 +196,56 @@ class CompteCreationController extends Controller
                     'derniereModification' => $compte->derniereModification->toIso8601String(),
                     'version' => $compte->version,
                 ],
-            ], 'Compte créé avec succès. Un email avec les informations de connexion a été envoyé au client.', Response::HTTP_CREATED);
+            ], \App\Rules\ApiMessages::compteSuccessMessages()['compte_created'], Response::HTTP_CREATED);
 
+        } catch (\Illuminate\Database\QueryException $e) {
+            DB::rollBack();
+
+            // Vérifier si c'est une erreur de contrainte d'unicité
+            if ($e->getCode() == 23000) {
+                return $this->error(
+                    'Une erreur de contrainte d\'unicité s\'est produite. Vérifiez que l\'email, le téléphone ou le NCI ne sont pas déjà utilisés.',
+                    Response::HTTP_UNPROCESSABLE_ENTITY
+                );
+            }
+
+            return $this->error(
+                \App\Rules\ApiMessages::compteErrorMessages()['unexpected_error'],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+
+            return $this->error(
+                'Données de validation invalides: ' . $e->getMessage(),
+                Response::HTTP_UNPROCESSABLE_ENTITY
+            );
         } catch (\Exception $e) {
             DB::rollBack();
 
             return $this->error(
-                'Une erreur inattendue s\'est produite lors de la création du compte',
+                \App\Rules\ApiMessages::compteErrorMessages()['unexpected_error'],
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
     }
 
     // Méthode pour créer des comptes sans authentification (pour les tests)
-    public function storeTest(StoreCompteRequest $request)
+    public function storeTest(Request $request)
     {
-        return $this->store($request);
+        // Créer une instance de StoreCompteRequest avec les données de la requête
+        $storeRequest = new StoreCompteRequest();
+        $storeRequest->merge($request->all());
+        $storeRequest->setContainer(app());
+        $storeRequest->setValidator(app('validator')->make($request->all(), $storeRequest->rules()));
+
+        // Simuler l'authentification d'un admin pour les tests
+        $admin = \App\Models\Admin::first();
+        if ($admin) {
+            \Illuminate\Support\Facades\Auth::login($admin->user);
+        }
+
+        return $this->store($storeRequest);
     }
 
     private function generateNumeroCompte(): string

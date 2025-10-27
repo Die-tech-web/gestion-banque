@@ -54,32 +54,42 @@ class AuthController extends Controller
             'email' => 'required|email',
             'password' => 'sometimes|required_without:code_authentification',
             'code_authentification' => 'sometimes|required_without:password',
-        ]);
+        ], \App\Rules\ApiMessages::authValidationMessages());
 
         $user = User::where('email', $request->email)->first();
 
         if (!$user) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
+            return response()->json(['message' => \App\Rules\ApiMessages::authErrorMessages()['invalid_credentials']], 401);
         }
 
         // Vérifier si c'est un admin (utilise password)
         if ($user->admin()->exists()) {
             if (!$request->has('password') || !Hash::check($request->password, $user->password)) {
-                return response()->json(['message' => 'Invalid credentials'], 401);
+                return response()->json(['message' => \App\Rules\ApiMessages::authErrorMessages()['invalid_credentials']], 401);
             }
-            // Authentifier manuellement l'admin
-            Auth::login($user);
         } else {
             // C'est un client, vérifier le code_authentification
             $client = $user->client;
             if (!$client || $client->code_authentification !== $request->code_authentification) {
-                return response()->json(['message' => 'Invalid credentials'], 401);
+                return response()->json(['message' => \App\Rules\ApiMessages::authErrorMessages()['invalid_credentials']], 401);
             }
-            // Authentifier manuellement le client
-            Auth::login($user);
         }
 
-        $token = $user->createToken('API Token')->accessToken;
-        return response()->json(['token' => $token])->cookie('api_token', $token, 60*24*7, '/', null, false, true);
+        // Créer un token d'accès OAuth directement
+        $oauthClient = \Laravel\Passport\Client::where('password_client', 1)->first();
+
+        if (!$oauthClient) {
+            return response()->json(['message' => 'OAuth client not configured'], 500);
+        }
+
+        // Créer le token avec le client password grant
+        $token = $user->createToken('API Token', [], $oauthClient->id);
+
+        return response()->json([
+            'access_token' => $token->accessToken,
+            'token_type' => 'Bearer',
+            'expires_in' => config('passport.tokens.expire_in', 31536000),
+            'refresh_token' => null,
+        ])->cookie('api_token', $token->accessToken, 60*24*7, '/', null, false, true);
     }
 }

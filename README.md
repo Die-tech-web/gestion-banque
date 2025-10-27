@@ -287,6 +287,35 @@ Cette section fournit tous les tests nécessaires pour tester la fonctionnalité
 - Authentification avec Sanctum (token Bearer requis)
 - Base de données configurée
 
+### Étapes pour obtenir un token d'authentification
+
+#### 1. Connexion Admin
+**Requête POST :**
+```
+URL: http://127.0.0.1:8000/api/login
+Method: POST
+Headers:
+  Accept: application/json
+  Content-Type: application/json
+Body (raw JSON):
+{
+  "email": "admin@example.com",
+  "password": "password"
+}
+```
+
+**✅ Réponse attendue (200 OK) :**
+```json
+{
+  "token": "your_sanctum_token_here"
+}
+```
+
+#### 2. Utilisation du Token
+Le token sera automatiquement inclus dans un cookie `api_token`. Pour les requêtes API, vous pouvez soit :
+- Utiliser le cookie automatiquement (middleware ApiCookieAuth)
+- Ajouter manuellement l'header Authorization
+
 ### Headers communs pour toutes les requêtes
 ```
 Authorization: Bearer {votre_token_sanctum}
@@ -705,3 +734,20 @@ TWILIO_FROM=your_twilio_phone_number
 - Le solde est calculé dynamiquement via l'accesseur `getSoldeAttribute`
 - Les notifications sont envoyées de manière asynchrone via les événements
 - Le middleware de logging enregistre toutes les requêtes API
+- Le middleware `ApiCookieAuth` permet l'authentification via cookie ou header Bearer
+- Pour les tests, vous pouvez utiliser la route `/api/v1/die.niang/comptes/test` sans authentification
+
+### 🔧 **Route de test sans authentification**
+Pour faciliter les tests, une route spéciale est disponible :
+
+**Requête POST :**
+```
+URL: http://127.0.0.1:8000/api/v1/die.niang/comptes/test
+Method: POST
+Headers:
+  Accept: application/json
+  Content-Type: application/json
+Body: (même que les tests ci-dessus)
+```
+
+Cette route simule l'authentification d'un admin et permet de tester la création de comptes sans avoir à gérer les tokens.
