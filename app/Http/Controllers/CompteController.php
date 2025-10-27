@@ -5,10 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\BlocageCompteRequest;
 use App\Http\Requests\DeblocageCompteRequest;
 use App\Http\Requests\CompteListRequest;
+use App\Http\Requests\UpdateCompteRequest;
 use App\Http\Resources\CompteResource;
 use App\Models\Compte;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\Request; // Import Request for store and update methods
+use Illuminate\Http\Request; 
 use App\Rules\CompteValide; // Import the custom rule
 use App\Models\Client; // Import Client model
 use App\Traits\ApiResponseTrait;
@@ -281,6 +282,7 @@ class CompteController extends Controller
      *      tags={"Comptes"},
      *      summary="Get list of non-archived comptes",
      *      description="Returns list of non-archived comptes",
+     *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *          name="api_name",
      *          in="path",
@@ -379,6 +381,7 @@ class CompteController extends Controller
      *      tags={"Comptes"},
      *      summary="Get list of archived comptes",
      *      description="Returns list of archived comptes",
+     *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *          name="api_name",
      *          in="path",
@@ -456,7 +459,7 @@ class CompteController extends Controller
         $user = Auth::user();
         $limit = $request->get('limit', 10);
 
-        $comptes = Compte::applyUserPermissions($user)
+        $comptes = Compte::withTrashed()->applyUserPermissions($user)
             ->byArchivedStatus(true)
             ->applyFiltersAndPagination($request)
             ->paginate($limit);
@@ -521,12 +524,19 @@ class CompteController extends Controller
      */
     public function archiveCompte(int $id): JsonResponse
     {
-        $compte = Compte::find($id);
+        $compte = Compte::withTrashed()->find($id);
 
         if (!$compte) {
             return $this->error(
                 $this->compteNotFound(),
                 CompteValide::httpStatusCodes()['not_found']
+            );
+        }
+
+        if ($compte->archived) {
+            return $this->error(
+                'Ce compte est déjà archivé.',
+                CompteValide::httpStatusCodes()['conflict']
             );
         }
 
@@ -874,6 +884,165 @@ class CompteController extends Controller
             $this->compteDetailsRetrievedSuccessfully(),
             CompteValide::httpStatusCodes()['success']
         );
+    }
+
+    /**
+     * @OA\Patch(
+     *      path="/api/v1/{api_name}/comptes/{id}",
+     *      operationId="updateCompte",
+     *      tags={"Comptes"},
+     *      summary="Update a specific compte",
+     *      description="Updates a compte by its ID with provided fields",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *          name="api_name",
+     *          in="path",
+     *          description="Dynamic API name from config",
+     *          required=true,
+     *          @OA\Schema(type="string", default="die.niang")
+     *      ),
+     *      @OA\Parameter(
+     *          name="id",
+     *          in="path",
+     *          description="ID of the compte to update",
+     *          required=true,
+     *          @OA\Schema(type="integer", format="int64")
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="titulaire", type="string", example="Amadou Diallo Junior"),
+     *              @OA\Property(property="informationsClient", type="object",
+     *                  @OA\Property(property="telephone", type="string", example="+221771234568"),
+     *                  @OA\Property(property="email", type="string", format="email", example="amadou.diallo@example.com"),
+     *                  @OA\Property(property="password", type="string", example="newpassword123"),
+     *                  @OA\Property(property="nci", type="string", example="12345678901234567890")
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Compte updated successfully",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="success", type="boolean", example=true),
+     *              @OA\Property(property="message", type="string", example="Compte mis à jour avec succès"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="string", format="uuid", example="550e8400-e29b-41d4-a716-446655440000"),
+     *                  @OA\Property(property="numeroCompte", type="string", example="C00123456"),
+     *                  @OA\Property(property="titulaire", type="string", example="Amadou Diallo Junior"),
+     *                  @OA\Property(property="type", type="string", example="epargne"),
+     *                  @OA\Property(property="solde", type="number", example=1250000),
+     *                  @OA\Property(property="devise", type="string", example="FCFA"),
+     *                  @OA\Property(property="dateCreation", type="string", format="date-time", example="2023-03-15T00:00:00Z"),
+     *                  @OA\Property(property="statut", type="string", example="bloque"),
+     *                  @OA\Property(property="metadata", type="object",
+     *                      @OA\Property(property="derniereModification", type="string", format="date-time", example="2025-10-19T11:00:00Z"),
+     *                      @OA\Property(property="version", type="integer", example=1)
+     *                  )
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Compte not found",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="Compte non trouvé."),
+     *              @OA\Property(property="success", type="boolean", example=false)
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="Validation failed."),
+     *              @OA\Property(property="success", type="boolean", example=false)
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Internal Server Error",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="Échec de la mise à jour du compte."),
+     *              @OA\Property(property="success", type="boolean", example=false)
+     *          )
+     *      )
+     * )
+     */
+    public function update(UpdateCompteRequest $request, int $id): JsonResponse
+    {
+        $compte = Compte::with(['client.user'])->find($id);
+
+        if (!$compte) {
+            return $this->error(
+                $this->compteNotFound(),
+                CompteValide::httpStatusCodes()['not_found']
+            );
+        }
+
+        // Vérifier les permissions : admin voit tous les comptes, client seulement les siens
+        $user = Auth::user();
+        $isAdmin = $user->admin()->exists();
+
+        if (!$isAdmin && (!$user->client || $compte->client_id !== $user->client->id)) {
+            return $this->error(
+                $this->unauthorizedCompteAccess(),
+                CompteValide::httpStatusCodes()['forbidden']
+            );
+        }
+
+        try {
+            $data = $request->validated();
+
+            // Mettre à jour le titulaire si fourni
+            if (isset($data['titulaire'])) {
+                $compte->client->user->name = $data['titulaire'];
+                $compte->client->user->save();
+            }
+
+            // Mettre à jour les informations client si fournies
+            if (isset($data['informationsClient'])) {
+                $clientData = $data['informationsClient'];
+
+                if (isset($clientData['telephone'])) {
+                    $compte->client->telephone = $clientData['telephone'];
+                }
+                if (isset($clientData['email'])) {
+                    $compte->client->user->email = $clientData['email'];
+                    $compte->client->user->save();
+                }
+                if (isset($clientData['password'])) {
+                    $compte->client->user->password = bcrypt($clientData['password']);
+                    $compte->client->user->save();
+                }
+                if (isset($clientData['nci'])) {
+                    $compte->client->nci = $clientData['nci'];
+                }
+
+                $compte->client->save();
+            }
+
+            // Mettre à jour la dernière modification et la version
+            $compte->derniereModification = now();
+            $compte->version = $compte->version + 1;
+            $compte->save();
+
+            return $this->success(
+                new CompteResource($compte),
+                $this->compteUpdatedSuccessfully(),
+                CompteValide::httpStatusCodes()['success']
+            );
+        } catch (\Exception $e) {
+            \Log::error("Failed to update compte: " . $e->getMessage());
+            return $this->error(
+                $this->failedToUpdateCompte(),
+                CompteValide::httpStatusCodes()['internal_server_error']
+            );
+        }
     }
 
     /**

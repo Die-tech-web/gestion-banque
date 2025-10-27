@@ -75,6 +75,7 @@ class CompteValide implements ValidationRule
             'compte_blocked' => 'Compte bloqué avec succès',
             'compte_unblocked' => 'Compte débloqué avec succès',
             'compte_details_retrieved' => 'Détails du compte récupérés avec succès',
+            'compte_updated' => 'Compte mis à jour avec succès',
         ];
     }
 
@@ -98,6 +99,7 @@ class CompteValide implements ValidationRule
             'client_not_found' => 'Client non trouvé.',
             'unauthorized_compte_access' => 'Accès non autorisé à ce compte.',
             'unexpected_error' => 'Une erreur inattendue s\'est produite lors de la création du compte',
+            'failed_to_update_compte' => 'Échec de la mise à jour du compte.',
         ];
     }
 

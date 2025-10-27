@@ -90,4 +90,14 @@ trait CompteMessages
     {
         return CompteValide::errorMessages()['compte_not_blocked'];
     }
+
+    protected function compteUpdatedSuccessfully(): string
+    {
+        return CompteValide::successMessages()['compte_updated'];
+    }
+
+    protected function failedToUpdateCompte(): string
+    {
+        return CompteValide::errorMessages()['failed_to_update_compte'];
+    }
 }

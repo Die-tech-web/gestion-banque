@@ -649,7 +649,12 @@
                     "400": {
                         "description": "Bad Request"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/v1/{api_name}/comptes/archives": {
@@ -800,7 +805,12 @@
                     "400": {
                         "description": "Bad Request"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/v1/{api_name}/comptes/{id}/archiver": {
@@ -1105,6 +1115,214 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Échec de la suppression du compte."
+                                        },
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Update a specific compte",
+                "description": "Updates a compte by its ID with provided fields",
+                "operationId": "updateCompte",
+                "parameters": [
+                    {
+                        "name": "api_name",
+                        "in": "path",
+                        "description": "Dynamic API name from config",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "default": "die.niang"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the compte to update",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "titulaire": {
+                                        "type": "string",
+                                        "example": "Amadou Diallo Junior"
+                                    },
+                                    "informationsClient": {
+                                        "properties": {
+                                            "telephone": {
+                                                "type": "string",
+                                                "example": "+221771234568"
+                                            },
+                                            "email": {
+                                                "type": "string",
+                                                "format": "email",
+                                                "example": "amadou.diallo@example.com"
+                                            },
+                                            "password": {
+                                                "type": "string",
+                                                "example": "newpassword123"
+                                            },
+                                            "nci": {
+                                                "type": "string",
+                                                "example": "12345678901234567890"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Compte updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Compte mis à jour avec succès"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "format": "uuid",
+                                                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                                                },
+                                                "numeroCompte": {
+                                                    "type": "string",
+                                                    "example": "C00123456"
+                                                },
+                                                "titulaire": {
+                                                    "type": "string",
+                                                    "example": "Amadou Diallo Junior"
+                                                },
+                                                "type": {
+                                                    "type": "string",
+                                                    "example": "epargne"
+                                                },
+                                                "solde": {
+                                                    "type": "number",
+                                                    "example": 1250000
+                                                },
+                                                "devise": {
+                                                    "type": "string",
+                                                    "example": "FCFA"
+                                                },
+                                                "dateCreation": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-03-15T00:00:00Z"
+                                                },
+                                                "statut": {
+                                                    "type": "string",
+                                                    "example": "bloque"
+                                                },
+                                                "metadata": {
+                                                    "properties": {
+                                                        "derniereModification": {
+                                                            "type": "string",
+                                                            "format": "date-time",
+                                                            "example": "2025-10-19T11:00:00Z"
+                                                        },
+                                                        "version": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Compte not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Compte non trouvé."
+                                        },
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation failed."
+                                        },
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Échec de la mise à jour du compte."
                                         },
                                         "success": {
                                             "type": "boolean",

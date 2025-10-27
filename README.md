@@ -751,3 +751,346 @@ Body: (même que les tests ci-dessus)
 ```
 
 Cette route simule l'authentification d'un admin et permet de tester la création de comptes sans avoir à gérer les tokens.
+
+## Tests Postman pour la Mise à Jour des Informations Client
+
+Cette section explique comment tester la fonctionnalité de mise à jour des informations d'un client à l'aide de Postman.
+
+### Prérequis
+- Application Laravel démarrée
+- Authentification avec Passport (token Bearer requis)
+- Base de données configurée avec des comptes existants
+- Avoir un compte existant avec un ID connu
+
+### Étapes pour obtenir un token d'authentification
+
+#### 1. Connexion Admin
+**Requête POST :**
+```
+URL: http://127.0.0.1:8000/api/login
+Method: POST
+Headers:
+  Accept: application/json
+  Content-Type: application/json
+Body (raw JSON):
+{
+  "email": "dieniang32@gmail.com",
+  "password": "password"
+}
+```
+
+**✅ Réponse attendue (200 OK) :**
+```json
+{
+  "access_token": "your_passport_token_here",
+  "token_type": "Bearer",
+  "expires_in": 31536000,
+  "refresh_token": null
+}
+```
+
+#### 2. Utilisation du Token
+Pour toutes les requêtes suivantes, ajoutez l'header Authorization :
+```
+Authorization: Bearer {votre_token_passport}
+Accept: application/json
+Content-Type: application/json
+```
+
+---
+
+### 🧪 **Test 1: Mise à jour complète des informations client**
+
+**Requête PATCH :**
+```
+URL: http://127.0.0.1:8000/api/v1/die.niang/comptes/{id}
+Method: PATCH
+Headers:
+  Authorization: Bearer {token}
+  Accept: application/json
+  Content-Type: application/json
+```
+
+**Body (JSON) :**
+```json
+{
+  "titulaire": "Amadou Diallo Junior",
+  "informationsClient": {
+    "telephone": "+221771234568",
+    "email": "amadou.diallo@example.com",
+    "password": "newpassword123",
+    "nci": "123456789012345678901"
+  }
+}
+```
+
+**✅ Réponse attendue (200 OK) :**
+```json
+{
+  "success": true,
+  "message": "Compte mis à jour avec succès",
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "numeroCompte": "C00123456",
+    "titulaire": "Amadou Diallo Junior",
+    "type": "epargne",
+    "solde": 1250000,
+    "devise": "FCFA",
+    "dateCreation": "2023-03-15T00:00:00Z",
+    "statut": "bloque",
+    "metadata": {
+      "derniereModification": "2025-10-19T11:00:00Z",
+      "version": 2
+    }
+  }
+}
+```
+
+---
+
+### 🧪 **Test 2: Mise à jour partielle - seulement le titulaire**
+
+**Requête PATCH :**
+```
+URL: http://127.0.0.1:8000/api/v1/die.niang/comptes/{id}
+Method: PATCH
+```
+
+**Body (JSON) :**
+```json
+{
+  "titulaire": "Nouveau Titulaire"
+}
+```
+
+**✅ Réponse attendue (200 OK) :**
+```json
+{
+  "success": true,
+  "message": "Compte mis à jour avec succès",
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "numeroCompte": "C00123456",
+    "titulaire": "Nouveau Titulaire",
+    "type": "epargne",
+    "solde": 1250000,
+    "devise": "FCFA",
+    "dateCreation": "2023-03-15T00:00:00Z",
+    "statut": "actif",
+    "metadata": {
+      "derniereModification": "2025-10-27T12:30:00Z",
+      "version": 3
+    }
+  }
+}
+```
+
+---
+
+### 🧪 **Test 3: Mise à jour partielle - seulement les informations client**
+
+**Requête PATCH :**
+```
+URL: http://127.0.0.1:8000/api/v1/die.niang/comptes/{id}
+Method: PATCH
+```
+
+**Body (JSON) :**
+```json
+{
+  "informationsClient": {
+    "telephone": "+221781234569",
+    "email": "nouveau.email@example.com"
+  }
+}
+```
+
+**✅ Réponse attendue (200 OK) :**
+```json
+{
+  "success": true,
+  "message": "Compte mis à jour avec succès",
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "numeroCompte": "C00123456",
+    "titulaire": "Ancien Titulaire",
+    "type": "epargne",
+    "solde": 1250000,
+    "devise": "FCFA",
+    "dateCreation": "2023-03-15T00:00:00Z",
+    "statut": "actif",
+    "metadata": {
+      "derniereModification": "2025-10-27T12:35:00Z",
+      "version": 4
+    }
+  }
+}
+```
+
+---
+
+### 🧪 **Test 4: Validation - Aucun champ fourni**
+
+**Requête PATCH :**
+```
+URL: http://127.0.0.1:8000/api/v1/die.niang/comptes/{id}
+Method: PATCH
+```
+
+**Body (JSON) :**
+```json
+{}
+```
+
+**❌ Réponse attendue (422 Unprocessable Entity) :**
+```json
+{
+  "message": "Au moins un champ doit être fourni pour la mise à jour.",
+  "errors": {
+    "general": [
+      "Au moins un champ doit être fourni pour la mise à jour."
+    ]
+  }
+}
+```
+
+---
+
+### 🧪 **Test 5: Validation - Email déjà utilisé**
+
+**Requête PATCH :**
+```
+URL: http://127.0.0.1:8000/api/v1/die.niang/comptes/{id}
+Method: PATCH
+```
+
+**Body (JSON) :**
+```json
+{
+  "informationsClient": {
+    "email": "email.existant@example.com"
+  }
+}
+```
+
+**❌ Réponse attendue (422 Unprocessable Entity) :**
+```json
+{
+  "message": "Les données fournies sont invalides.",
+  "errors": {
+    "informationsClient.email": [
+      "Cet email est déjà utilisé."
+    ]
+  }
+}
+```
+
+---
+
+### 🧪 **Test 6: Validation - Format téléphone invalide**
+
+**Requête PATCH :**
+```
+URL: http://127.0.0.1:8000/api/v1/die.niang/comptes/{id}
+Method: PATCH
+```
+
+**Body (JSON) :**
+```json
+{
+  "informationsClient": {
+    "telephone": "771234567"
+  }
+}
+```
+
+**❌ Réponse attendue (422 Unprocessable Entity) :**
+```json
+{
+  "message": "Les données fournies sont invalides.",
+  "errors": {
+    "informationsClient.telephone": [
+      "Le :attribute doit commencer par +221."
+    ]
+  }
+}
+```
+
+---
+
+### 🧪 **Test 7: Compte non trouvé**
+
+**Requête PATCH :**
+```
+URL: http://127.0.0.1:8000/api/v1/die.niang/comptes/99999
+Method: PATCH
+```
+
+**Body (JSON) :**
+```json
+{
+  "titulaire": "Test"
+}
+```
+
+**❌ Réponse attendue (404 Not Found) :**
+```json
+{
+  "success": false,
+  "message": "Compte non trouvé."
+}
+```
+
+---
+
+### 🧪 **Test 8: Accès non autorisé (client tentant d'accéder à un compte qui n'est pas le sien)**
+
+**Requête PATCH :**
+```
+URL: http://127.0.0.1:8000/api/v1/die.niang/comptes/{id_autre_client}
+Method: PATCH
+Headers:
+  Authorization: Bearer {token_client}  # Token d'un client
+```
+
+**Body (JSON) :**
+```json
+{
+  "titulaire": "Test"
+}
+```
+
+**❌ Réponse attendue (403 Forbidden) :**
+```json
+{
+  "success": false,
+  "message": "Accès non autorisé à ce compte."
+}
+```
+
+---
+
+### 📋 **Résumé des Tests de Mise à Jour**
+
+| Test | Description | Résultat Attendu |
+|------|-------------|------------------|
+| 1 | Mise à jour complète | ✅ 200 OK |
+| 2 | Mise à jour titulaire seulement | ✅ 200 OK |
+| 3 | Mise à jour infos client seulement | ✅ 200 OK |
+| 4 | Aucun champ fourni | ❌ 422 Unprocessable Entity |
+| 5 | Email dupliqué | ❌ 422 Unprocessable Entity |
+| 6 | Téléphone invalide | ❌ 422 Unprocessable Entity |
+| 7 | Compte non trouvé | ❌ 404 Not Found |
+| 8 | Accès non autorisé | ❌ 403 Forbidden |
+
+### ⚠️ **Notes importantes pour la mise à jour**
+- Tous les champs dans la requête sont **optionnels**, mais **au moins un** doit être fourni
+- Le `telephone` doit respecter le format sénégalais (+2217xxxxxxxx) et être unique
+- L'`email` doit être valide et unique
+- Le `password` sera hashé automatiquement si fourni
+- Le `nci` doit contenir exactement 20 caractères
+- Seuls les admins peuvent modifier tous les comptes
+- Les clients ne peuvent modifier que leurs propres comptes
+- La `version` du compte est automatiquement incrémentée
+- La `derniereModification` est automatiquement mise à jour
+- Les modifications sont validées avant d'être appliquées

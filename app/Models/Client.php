@@ -13,6 +13,7 @@ class Client extends Model
         'user_id',
         'adresse',
         'telephone',
+        'email',
         'nci',
         'code_authentification',
     ];
