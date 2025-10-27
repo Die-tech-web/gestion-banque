@@ -1781,17 +1781,12 @@
                     "email": {
                         "type": "string",
                         "format": "email",
-                        "example": "admin@example.com"
+                        "example": "dieniang32@gmail.com"
                     },
                     "password": {
                         "description": "Requis pour les admins",
                         "type": "string",
                         "example": "password"
-                    },
-                    "code_authentification": {
-                        "description": "Requis pour les clients",
-                        "type": "string",
-                        "example": "123456"
                     }
                 },
                 "type": "object"

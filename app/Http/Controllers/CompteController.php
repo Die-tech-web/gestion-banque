@@ -70,9 +70,8 @@ use Illuminate\Http\JsonResponse; // Import JsonResponse
  *         schema="LoginRequest",
  *         type="object",
  *         required={"email"},
- *         @OA\Property(property="email", type="string", format="email", example="admin@example.com"),
- *         @OA\Property(property="password", type="string", example="password", description="Requis pour les admins"),
- *         @OA\Property(property="code_authentification", type="string", example="123456", description="Requis pour les clients")
+ *         @OA\Property(property="email", type="string", format="email", example="dieniang32@gmail.com"),
+ *         @OA\Property(property="password", type="string", example="password", description="Requis pour les admins")
  *     ),
  *     @OA\Schema(
  *         schema="LoginResponse",
