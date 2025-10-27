@@ -35,6 +35,10 @@ use Illuminate\Http\JsonResponse; // Import JsonResponse
  *      url=L5_SWAGGER_CONST_HOST,
  *      description="Gestion Compte API Server"
  * )
+ *@OA\Server(
+ *      url="https://gestion-banque.onrender.com",
+ *      description="Gestion Compte API Server a distance"
+ * )
  *
  * @OA\Components(
  *     @OA\Schema(

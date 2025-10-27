@@ -18,7 +18,8 @@
             "description": "Gestion Compte API Server"
         },
         {
-            "url": "/api/v1/die.niang"
+            "url": "https://gestion-banque.onrender.com",
+            "description": "Gestion Compte API Server a distance"
         }
     ],
     "paths": {
