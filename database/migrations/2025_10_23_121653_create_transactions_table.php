@@ -12,8 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('transactions', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('compte_id')->constrained()->onDelete('cascade');
+            $table->uuid('id')->primary();
+            $table->uuid('compte_id');
+            $table->foreign('compte_id')->references('id')->on('comptes')->onDelete('cascade');
             $table->enum('type', ['depot', 'retrait', 'transfert']);
             $table->decimal('montant', 10, 2);
             $table->string('devise')->default('XOF');

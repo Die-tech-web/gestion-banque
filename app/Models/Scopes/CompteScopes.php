@@ -25,6 +25,9 @@ trait CompteScopes
         if ($request->has('statut')) {
             $query->where('statut', $request->statut);
         }
+        if ($request->has('archived')) {
+            $query->where('archived', $request->boolean('archived'));
+        }
         if ($request->has('search')) {
             $searchTerm = $request->search;
             $query->where(function ($q) use ($searchTerm) {
@@ -33,6 +36,11 @@ trait CompteScopes
                         $q2->where('name', 'like', '%' . $searchTerm . '%');
                     });
             });
+        }
+
+        // Default filter: only non-archived accounts unless explicitly requested
+        if (!$request->has('archived')) {
+            $query->where('archived', false);
         }
 
         // Sorting

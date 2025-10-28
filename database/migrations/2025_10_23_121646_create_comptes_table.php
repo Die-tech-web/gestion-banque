@@ -12,9 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('comptes', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('numeroCompte')->unique();
-            $table->foreignId('client_id')->constrained()->onDelete('cascade');
+            $table->uuid('client_id');
+            $table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
             $table->enum('type', ['courant', 'epargne', 'cheque']);
             $table->string('devise')->default('XOF');
             $table->date('dateCreation');

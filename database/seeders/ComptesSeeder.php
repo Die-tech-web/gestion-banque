@@ -84,5 +84,41 @@ class ComptesSeeder extends Seeder
                 'version' => 1,
             ]);
         }
+
+        $fabiClient = Client::whereHas('user', function ($query) {
+            $query->where('email', 'fabi.fall@example.com');
+        })->first();
+
+        $ndiayeClient = Client::whereHas('user', function ($query) {
+            $query->where('email', 'ndiaye.savon@example.com');
+        })->first();
+
+        if ($fabiClient) {
+            Compte::firstOrCreate([
+                'numeroCompte' => 'C00123461',
+            ], [
+                'client_id' => $fabiClient->id,
+                'type' => 'epargne',
+                'devise' => 'XOF',
+                'dateCreation' => '2023-06-20',
+                'statut' => 'actif',
+                'derniereModification' => now(),
+                'version' => 1,
+            ]);
+        }
+
+        if ($ndiayeClient) {
+            Compte::firstOrCreate([
+                'numeroCompte' => 'C00123462',
+            ], [
+                'client_id' => $ndiayeClient->id,
+                'type' => 'cheque',
+                'devise' => 'XOF',
+                'dateCreation' => '2023-07-10',
+                'statut' => 'actif',
+                'derniereModification' => now(),
+                'version' => 1,
+            ]);
+        }
     }
 }

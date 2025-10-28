@@ -93,10 +93,11 @@ class AuthController extends Controller
         $refreshToken->token->save();
 
         return response()->json([
-            'access_token' => $token->accessToken,
+            'token' => $token->accessToken,
             'token_type' => 'Bearer',
             'expires_in' => config('passport.tokens.expire_in', 31536000),
             'refresh_token' => $refreshToken->accessToken,
+            'expires_at' => Carbon::now()->addSeconds(config('passport.tokens.expire_in', 31536000))->toIso8601String(),
         ])->cookie('api_token', $token->accessToken, 60*24*7, '/', null, false, true);
     }
 }

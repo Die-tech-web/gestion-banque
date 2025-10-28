@@ -40,6 +40,9 @@ Route::middleware(['auth.api_cookie'])->group(function () {
     });
 });
 
+// Route temporaire pour tester sans authentification
+Route::get('/v1/die.niang/comptes', [CompteController::class, 'index']);
+
 // Route séparée pour la création de compte (admin seulement)
 Route::middleware(['auth.api_cookie'])->middleware(['auth:api'])->middleware(['App\Http\Middleware\LoggingMiddleware'])->post('/comptes', [App\Http\Controllers\CompteCreationController::class, 'store']);
 

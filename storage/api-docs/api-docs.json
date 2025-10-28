@@ -109,16 +109,26 @@
                         "description": "Filter by account type (courant, epargne)",
                         "required": false,
                         "schema": {
-                            "type": "string"
+                            "type": "string",
+                            "enum": [
+                                "courant",
+                                "epargne"
+                            ]
                         }
                     },
                     {
                         "name": "statut",
                         "in": "query",
-                        "description": "Filter by account status (actif, ferme, suspendu)",
+                        "description": "Filter by account status (actif, ferme, suspendu, bloque)",
                         "required": false,
                         "schema": {
-                            "type": "string"
+                            "type": "string",
+                            "enum": [
+                                "actif",
+                                "ferme",
+                                "suspendu",
+                                "bloque"
+                            ]
                         }
                     },
                     {
@@ -137,7 +147,12 @@
                         "required": false,
                         "schema": {
                             "type": "string",
-                            "default": "dateCreation"
+                            "default": "dateCreation",
+                            "enum": [
+                                "dateCreation",
+                                "titulaire",
+                                "solde"
+                            ]
                         }
                     },
                     {
@@ -147,7 +162,11 @@
                         "required": false,
                         "schema": {
                             "type": "string",
-                            "default": "desc"
+                            "default": "desc",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
                         }
                     },
                     {
@@ -527,7 +546,11 @@
                         "description": "Filter by account type (courant, epargne)",
                         "required": false,
                         "schema": {
-                            "type": "string"
+                            "type": "string",
+                            "enum": [
+                                "courant",
+                                "epargne"
+                            ]
                         }
                     },
                     {
@@ -546,7 +569,12 @@
                         "required": false,
                         "schema": {
                             "type": "string",
-                            "default": "dateCreation"
+                            "default": "dateCreation",
+                            "enum": [
+                                "dateCreation",
+                                "titulaire",
+                                "solde"
+                            ]
                         }
                     },
                     {
@@ -556,7 +584,11 @@
                         "required": false,
                         "schema": {
                             "type": "string",
-                            "default": "desc"
+                            "default": "desc",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
                         }
                     },
                     {
@@ -683,7 +715,53 @@
                         "description": "Filter by account type (courant, epargne)",
                         "required": false,
                         "schema": {
-                            "type": "string"
+                            "type": "string",
+                            "enum": [
+                                "courant",
+                                "epargne"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "statut",
+                        "in": "query",
+                        "description": "Filter by account status (actif, ferme, suspendu, bloque)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "actif",
+                                "ferme",
+                                "suspendu",
+                                "bloque"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "archived",
+                        "in": "query",
+                        "description": "Filter by archived status (true for archived, false for non-archived)",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "archived",
+                        "in": "query",
+                        "description": "Filter by archived status (true for archived, false for non-archived)",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "archived",
+                        "in": "query",
+                        "description": "Filter by archived status (true for archived, false for non-archived)",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
                         }
                     },
                     {
@@ -702,7 +780,12 @@
                         "required": false,
                         "schema": {
                             "type": "string",
-                            "default": "dateCreation"
+                            "default": "dateCreation",
+                            "enum": [
+                                "dateCreation",
+                                "titulaire",
+                                "solde"
+                            ]
                         }
                     },
                     {
@@ -712,7 +795,11 @@
                         "required": false,
                         "schema": {
                             "type": "string",
-                            "default": "desc"
+                            "default": "desc",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
                         }
                     },
                     {
