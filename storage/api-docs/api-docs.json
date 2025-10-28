@@ -926,8 +926,8 @@
                         "description": "ID of the compte to archive",
                         "required": true,
                         "schema": {
-                            "type": "integer",
-                            "format": "int64"
+                            "type": "string",
+                            "format": "uuid"
                         }
                     }
                 ],
@@ -1025,8 +1025,8 @@
                         "description": "ID of the compte to retrieve",
                         "required": true,
                         "schema": {
-                            "type": "integer",
-                            "format": "int64"
+                            "type": "string",
+                            "format": "uuid"
                         }
                     }
                 ],
@@ -1125,8 +1125,8 @@
                         "description": "ID of the compte to soft delete",
                         "required": true,
                         "schema": {
-                            "type": "integer",
-                            "format": "int64"
+                            "type": "string",
+                            "format": "uuid"
                         }
                     }
                 ],
@@ -1245,8 +1245,8 @@
                         "description": "ID of the compte to update",
                         "required": true,
                         "schema": {
-                            "type": "integer",
-                            "format": "int64"
+                            "type": "string",
+                            "format": "uuid"
                         }
                     }
                 ],
@@ -1455,8 +1455,8 @@
                         "description": "ID of the compte to block",
                         "required": true,
                         "schema": {
-                            "type": "integer",
-                            "format": "int64"
+                            "type": "string",
+                            "format": "uuid"
                         }
                     }
                 ],
@@ -1640,8 +1640,8 @@
                         "description": "ID of the compte to unblock",
                         "required": true,
                         "schema": {
-                            "type": "integer",
-                            "format": "int64"
+                            "type": "string",
+                            "format": "uuid"
                         }
                     }
                 ],

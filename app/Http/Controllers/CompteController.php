@@ -584,7 +584,7 @@ class CompteController extends Controller
      *          in="path",
      *          description="ID of the compte to archive",
      *          required=true,
-     *          @OA\Schema(type="integer", format="int64")
+     *          @OA\Schema(type="string", format="uuid")
      *      ),
      *      @OA\Response(
      *          response=200,
@@ -615,7 +615,7 @@ class CompteController extends Controller
      *      )
      * )
      */
-    public function archiveCompte(int $id): JsonResponse
+    public function archiveCompte(string $id): JsonResponse
     {
         $compte = Compte::withTrashed()->find($id);
 
@@ -669,7 +669,7 @@ class CompteController extends Controller
      *          in="path",
      *          description="ID of the compte to soft delete",
      *          required=true,
-     *          @OA\Schema(type="integer", format="int64")
+     *          @OA\Schema(type="string", format="uuid")
      *      ),
      *      @OA\Response(
      *          response=200,
@@ -706,7 +706,7 @@ class CompteController extends Controller
      *      )
      * )
      */
-    public function destroy(int $id): JsonResponse
+    public function destroy(string $id): JsonResponse
     {
         $compte = Compte::withTrashed()->find($id);
 
@@ -769,7 +769,7 @@ class CompteController extends Controller
      *          in="path",
      *          description="ID of the compte to block",
      *          required=true,
-     *          @OA\Schema(type="integer", format="int64")
+     *          @OA\Schema(type="string", format="uuid")
      *      ),
      *      @OA\RequestBody(
      *          required=true,
@@ -826,7 +826,7 @@ class CompteController extends Controller
      *      )
      * )
      */
-    public function block(BlocageCompteRequest $request, int $id): JsonResponse
+    public function block(BlocageCompteRequest $request, string $id): JsonResponse
     {
         $compte = Compte::find($id);
 
@@ -918,7 +918,7 @@ class CompteController extends Controller
      *          in="path",
      *          description="ID of the compte to retrieve",
      *          required=true,
-     *          @OA\Schema(type="integer", format="int64")
+     *          @OA\Schema(type="string", format="uuid")
      *      ),
      *      @OA\Response(
      *          response=200,
@@ -950,7 +950,7 @@ class CompteController extends Controller
      *      )
      * )
      */
-    public function show($id): JsonResponse
+    public function show(string $id): JsonResponse
     {
         $compte = Compte::with(['client.user', 'transactions'])->find($id);
 
@@ -999,7 +999,7 @@ class CompteController extends Controller
      *          in="path",
      *          description="ID of the compte to update",
      *          required=true,
-     *          @OA\Schema(type="integer", format="int64")
+     *          @OA\Schema(type="string", format="uuid")
      *      ),
      *      @OA\RequestBody(
      *          required=true,
@@ -1066,7 +1066,7 @@ class CompteController extends Controller
      *      )
      * )
      */
-    public function update(UpdateCompteRequest $request, int $id): JsonResponse
+    public function update(UpdateCompteRequest $request, string $id): JsonResponse
     {
         $compte = Compte::with(['client.user'])->find($id);
 
@@ -1158,7 +1158,7 @@ class CompteController extends Controller
      *          in="path",
      *          description="ID of the compte to unblock",
      *          required=true,
-     *          @OA\Schema(type="integer", format="int64")
+     *          @OA\Schema(type="string", format="uuid")
      *      ),
      *      @OA\RequestBody(
      *          required=true,
@@ -1211,7 +1211,7 @@ class CompteController extends Controller
      *      )
      * )
      */
-    public function unblock(DeblocageCompteRequest $request, int $id): JsonResponse
+    public function unblock(DeblocageCompteRequest $request, string $id): JsonResponse
     {
         $compte = Compte::find($id);
 
