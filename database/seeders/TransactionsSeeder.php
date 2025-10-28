@@ -22,7 +22,7 @@ class TransactionsSeeder extends Seeder
             Transaction::create([
                 'compte_id' => $compte1->id,
                 'type' => 'depot',
-                'montant' => 1000000,
+                'montant' => 500000,
                 'devise' => 'XOF',
                 'description' => 'Dépôt initial',
                 'dateTransaction' => now(),
@@ -30,7 +30,7 @@ class TransactionsSeeder extends Seeder
             Transaction::create([
                 'compte_id' => $compte1->id,
                 'type' => 'retrait',
-                'montant' => 50000,
+                'montant' => 200000,
                 'devise' => 'XOF',
                 'description' => 'Retrait DAB',
                 'dateTransaction' => now(),

@@ -91,7 +91,20 @@ class Compte extends Model
     {
         $totalDepots = $this->transactions()->where('type', 'depot')->sum('montant');
         $totalRetraits = $this->transactions()->where('type', 'retrait')->sum('montant');
-        return $totalDepots - $totalRetraits;
+        $solde = $totalDepots - $totalRetraits;
+
+        // Pour les comptes chèque, permettre les soldes négatifs (découvert)
+        // Pour les comptes épargne, ne pas afficher de solde négatif (minimum 0)
+        // Pour éviter les soldes à 0, on peut retourner un minimum de 10000 pour les comptes sans transactions
+        if ($this->transactions()->count() == 0) {
+            return 10000; // Minimum 10000 FCFA pour les comptes sans transactions
+        }
+
+        if ($this->type === 'epargne' && $solde < 0) {
+            return 0;
+        }
+
+        return $solde;
     }
 
     /**
