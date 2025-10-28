@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use Laravel\Passport\RefreshToken;
+use Carbon\Carbon;
 
 class AuthController extends Controller
 {
@@ -85,11 +87,16 @@ class AuthController extends Controller
         // Créer le token avec le client password grant
         $token = $user->createToken('API Token', [], $oauthClient->id);
 
+        // Générer un refresh token qui expire dans 30 jours
+        $refreshToken = $user->createToken('Refresh Token', [], $oauthClient->id);
+        $refreshToken->token->expires_at = Carbon::now()->addDays(30);
+        $refreshToken->token->save();
+
         return response()->json([
             'access_token' => $token->accessToken,
             'token_type' => 'Bearer',
             'expires_in' => config('passport.tokens.expire_in', 31536000),
-            'refresh_token' => null,
+            'refresh_token' => $refreshToken->accessToken,
         ])->cookie('api_token', $token->accessToken, 60*24*7, '/', null, false, true);
     }
 }
