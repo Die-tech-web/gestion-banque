@@ -47,5 +47,26 @@ class UserSeeder extends Seeder
             'name' => 'Admin User',
             'password' => Hash::make('password'),
         ]);
+
+        User::firstOrCreate([
+            'email' => 'thierno.segnae@example.com',
+        ], [
+            'name' => 'Thierno Segnae',
+            'password' => Hash::make('password'),
+        ]);
+
+        User::firstOrCreate([
+            'email' => 'kalidou.guisse@example.com',
+        ], [
+            'name' => 'Kalidou Guisse',
+            'password' => Hash::make('password'),
+        ]);
+
+        User::firstOrCreate([
+            'email' => 'rama.gueye@example.com',
+        ], [
+            'name' => 'Rama Gueye',
+            'password' => Hash::make('password'),
+        ]);
     }
 }

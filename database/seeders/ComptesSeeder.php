@@ -22,8 +22,8 @@ class ComptesSeeder extends Seeder
         })->first();
 
         if ($clientOne) {
-            Compte::firstOrCreate([
-                'numeroCompte' => 'C00123456',
+            Compte::updateOrCreate([
+                'numeroCompte' => 'C00123480', // Numéro de compte unique
             ], [
                 'client_id' => $clientOne->id,
                 'type' => 'epargne',
@@ -34,11 +34,11 @@ class ComptesSeeder extends Seeder
                 'version' => 1,
             ]);
 
-            Compte::firstOrCreate([
-                'numeroCompte' => 'C00123457',
+            Compte::updateOrCreate([
+                'numeroCompte' => 'C00123481', // Numéro de compte unique
             ], [
                 'client_id' => $clientOne->id,
-                'type' => 'cheque',
+                'type' => 'cheque', // Compte chèque
                 'devise' => 'XOF',
                 'dateCreation' => '2023-02-01',
                 'statut' => 'actif',
@@ -48,8 +48,8 @@ class ComptesSeeder extends Seeder
         }
 
         if ($clientTwo) {
-            Compte::firstOrCreate([
-                'numeroCompte' => 'C00123458',
+            Compte::updateOrCreate([
+                'numeroCompte' => 'C00123482', // Numéro de compte unique
             ], [
                 'client_id' => $clientTwo->id,
                 'type' => 'epargne',
@@ -60,11 +60,11 @@ class ComptesSeeder extends Seeder
                 'version' => 1,
             ]);
 
-            Compte::firstOrCreate([
-                'numeroCompte' => 'C00123459',
+            Compte::updateOrCreate([
+                'numeroCompte' => 'C00123483', // Numéro de compte unique
             ], [
                 'client_id' => $clientTwo->id,
-                'type' => 'cheque',
+                'type' => 'cheque', // Compte chèque
                 'devise' => 'XOF',
                 'dateCreation' => '2023-04-22',
                 'statut' => 'ferme',
@@ -72,8 +72,8 @@ class ComptesSeeder extends Seeder
                 'version' => 1,
             ]);
 
-            Compte::firstOrCreate([
-                'numeroCompte' => 'C00123460',
+            Compte::updateOrCreate([
+                'numeroCompte' => 'C00123484', // Numéro de compte unique
             ], [
                 'client_id' => $clientTwo->id,
                 'type' => 'epargne',
@@ -94,8 +94,8 @@ class ComptesSeeder extends Seeder
         })->first();
 
         if ($fabiClient) {
-            Compte::firstOrCreate([
-                'numeroCompte' => 'C00123461',
+            Compte::updateOrCreate([
+                'numeroCompte' => 'C00123485', // Numéro de compte unique
             ], [
                 'client_id' => $fabiClient->id,
                 'type' => 'epargne',
@@ -108,13 +108,67 @@ class ComptesSeeder extends Seeder
         }
 
         if ($ndiayeClient) {
-            Compte::firstOrCreate([
-                'numeroCompte' => 'C00123462',
+            Compte::updateOrCreate([
+                'numeroCompte' => 'C00123486', // Numéro de compte unique
             ], [
                 'client_id' => $ndiayeClient->id,
-                'type' => 'cheque',
+                'type' => 'cheque', // Compte chèque
                 'devise' => 'XOF',
                 'dateCreation' => '2023-07-10',
+                'statut' => 'actif',
+                'derniereModification' => now(),
+                'version' => 1,
+            ]);
+        }
+
+        $thiernoClient = Client::whereHas('user', function ($query) {
+            $query->where('email', 'thierno.segnae@example.com');
+        })->first();
+
+        if ($thiernoClient) {
+            Compte::updateOrCreate([
+                'numeroCompte' => 'C00123470', // Nouveau numéro de compte unique
+            ], [
+                'client_id' => $thiernoClient->id,
+                'type' => 'cheque', // Compte chèque
+                'devise' => 'XOF',
+                'dateCreation' => '2023-08-01',
+                'statut' => 'actif',
+                'derniereModification' => now(),
+                'version' => 1,
+            ]);
+        }
+
+        $kalidouClient = Client::whereHas('user', function ($query) {
+            $query->where('email', 'kalidou.guisse@example.com');
+        })->first();
+
+        if ($kalidouClient) {
+            Compte::updateOrCreate([
+                'numeroCompte' => 'C00123471', // Nouveau numéro de compte unique
+            ], [
+                'client_id' => $kalidouClient->id,
+                'type' => 'cheque', // Compte chèque
+                'devise' => 'XOF',
+                'dateCreation' => '2023-09-05',
+                'statut' => 'actif',
+                'derniereModification' => now(),
+                'version' => 1,
+            ]);
+        }
+
+        $ramaClient = Client::whereHas('user', function ($query) {
+            $query->where('email', 'rama.gueye@example.com');
+        })->first();
+
+        if ($ramaClient) {
+            Compte::firstOrCreate([
+                'numeroCompte' => 'C00123472', // Nouveau numéro de compte unique
+            ], [
+                'client_id' => $ramaClient->id,
+                'type' => 'epargne', // Compte épargne
+                'devise' => 'XOF',
+                'dateCreation' => '2023-10-10',
                 'statut' => 'actif',
                 'derniereModification' => now(),
                 'version' => 1,

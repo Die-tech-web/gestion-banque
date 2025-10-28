@@ -837,6 +837,14 @@ class CompteController extends Controller
             );
         }
 
+        // Vérification supplémentaire pour s'assurer qu'un compte chèque ne peut pas être bloqué
+        if ($compte->type === 'courant') {
+            return $this->error(
+                'Un compte chèque ne peut pas être bloqué.',
+                CompteValide::httpStatusCodes()['bad_request']
+            );
+        }
+
         // Vérifier si le compte est expiré et le débloquer automatiquement si nécessaire
         $compte->checkAndUnblockExpired();
 

@@ -54,5 +54,35 @@ class ClientSeeder extends Seeder
                 'code_authentification' => 'NDI456',
             ]);
         }
+
+        $thiernoUser = User::where('email', 'thierno.segnae@example.com')->first();
+        if ($thiernoUser) {
+            Client::create([
+                'user_id' => $thiernoUser->id,
+                'adresse' => '202 Rue des Artistes',
+                'telephone' => '333-444-5555',
+                'code_authentification' => 'THI789',
+            ]);
+        }
+
+        $kalidouUser = User::where('email', 'kalidou.guisse@example.com')->first();
+        if ($kalidouUser) {
+            Client::create([
+                'user_id' => $kalidouUser->id,
+                'adresse' => '303 Avenue de la Liberté',
+                'telephone' => '666-777-8888',
+                'code_authentification' => 'KAL101',
+            ]);
+        }
+
+        $ramaUser = User::where('email', 'rama.gueye@example.com')->first();
+        if ($ramaUser) {
+            Client::create([
+                'user_id' => $ramaUser->id,
+                'adresse' => '404 Place de l\'Indépendance',
+                'telephone' => '999-000-1111',
+                'code_authentification' => 'RAM202',
+            ]);
+        }
     }
 }
