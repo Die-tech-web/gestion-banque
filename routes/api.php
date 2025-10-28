@@ -22,8 +22,6 @@ use App\Models\User;
 
 // Route de connexion publique
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('/v1/die.niang/login', [AuthController::class, 'login']);
-Route::post('/api/v1/die.niang/login', [AuthController::class, 'login']);
 
 Route::middleware(['auth.api_cookie'])->group(function () {
     Route::middleware(['auth:api'])->group(function () {
@@ -41,16 +39,16 @@ Route::middleware(['auth.api_cookie'])->group(function () {
 });
 
 // Route temporaire pour tester sans authentification
-Route::get('/v1/die.niang/comptes', [CompteController::class, 'index']);
+Route::get('/v1/comptes', [CompteController::class, 'index']);
 
 // Route séparée pour la création de compte (admin seulement)
 Route::middleware(['auth.api_cookie'])->middleware(['auth:api'])->middleware(['App\Http\Middleware\LoggingMiddleware'])->post('/comptes', [App\Http\Controllers\CompteCreationController::class, 'store']);
 
 // Route pour créer des comptes avec authentification
-Route::middleware(['auth.api_cookie'])->middleware(['auth:api'])->middleware(['App\Http\Middleware\LoggingMiddleware'])->post('/v1/die.niang/comptes', [App\Http\Controllers\CompteCreationController::class, 'store']);
+Route::middleware(['auth.api_cookie'])->middleware(['auth:api'])->middleware(['App\Http\Middleware\LoggingMiddleware'])->post('/v1/comptes', [App\Http\Controllers\CompteCreationController::class, 'store']);
 
 // Route pour créer des comptes sans authentification (pour les tests)
-Route::post('/v1/die.niang/comptes/test', [App\Http\Controllers\CompteCreationController::class, 'storeTest']);
+Route::post('/v1/comptes/test', [App\Http\Controllers\CompteCreationController::class, 'storeTest']);
 
 Route::get('/test', function () {
     return response()->json(['message' => 'Test route works!']);

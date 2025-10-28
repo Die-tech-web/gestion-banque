@@ -90,18 +90,11 @@ class CompteController extends Controller
     use ApiResponseTrait, CompteMessages;
     /**
      * @OA\Get(
-     *      path="/api/v1/{api_name}/comptes",
+     *      path="/api/v1/comptes",
      *      operationId="getComptesList",
      *      tags={"Comptes"},
      *      summary="Get list of comptes",
      *      description="Returns list of comptes",
-     *      @OA\Parameter(
-     *          name="api_name",
-     *          in="path",
-     *          description="Dynamic API name from config",
-     *          required=true,
-     *          @OA\Schema(type="string", default="die.niang")
-     *      ),
      *      @OA\Parameter(
      *          name="type",
      *          in="query",
@@ -189,19 +182,12 @@ class CompteController extends Controller
      */
     /**
      * @OA\Get(
-     *      path="/api/v1/{api_name}/comptes",
+     *      path="/api/v1/comptes",
      *      operationId="getComptesList",
      *      tags={"Comptes"},
      *      summary="Get list of comptes",
      *      description="Returns list of comptes",
      *      security={{"bearerAuth":{}}},
-     *      @OA\Parameter(
-     *          name="api_name",
-     *          in="path",
-     *          description="Dynamic API name from config",
-     *          required=true,
-     *          @OA\Schema(type="string", default="die.niang")
-     *      ),
      *      @OA\Parameter(
      *          name="type",
      *          in="query",
@@ -317,19 +303,12 @@ class CompteController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/api/v1/{api_name}/comptes/non-archives",
+     *      path="/api/v1/comptes/non-archives",
      *      operationId="getNonArchivedComptesList",
      *      tags={"Comptes"},
      *      summary="Get list of non-archived comptes",
      *      description="Returns list of non-archived comptes",
      *      security={{"bearerAuth":{}}},
-     *      @OA\Parameter(
-     *          name="api_name",
-     *          in="path",
-     *          description="Dynamic API name from config",
-     *          required=true,
-     *          @OA\Schema(type="string", default="die.niang")
-     *      ),
      *      @OA\Parameter(
      *          name="type",
      *          in="query",
@@ -427,19 +406,12 @@ class CompteController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/api/v1/{api_name}/comptes/archives",
+     *      path="/api/v1/comptes/archives",
      *      operationId="getArchivedComptesList",
      *      tags={"Comptes"},
      *      summary="Get list of archived comptes",
      *      description="Returns list of archived comptes",
      *      security={{"bearerAuth":{}}},
-     *      @OA\Parameter(
-     *          name="api_name",
-     *          in="path",
-     *          description="Dynamic API name from config",
-     *          required=true,
-     *          @OA\Schema(type="string", default="die.niang")
-     *      ),
      *      @OA\Parameter(
      *          name="type",
      *          in="query",
@@ -566,19 +538,12 @@ class CompteController extends Controller
 
     /**
      * @OA\Post(
-     *      path="/api/v1/{api_name}/comptes/{id}/archiver",
+     *      path="/api/v1/comptes/{id}/archiver",
      *      operationId="archiveCompte",
      *      tags={"Comptes"},
      *      summary="Archive a specific compte",
      *      description="Archives a compte by its ID",
      *      security={{"bearerAuth":{}}},
-     *      @OA\Parameter(
-     *          name="api_name",
-     *          in="path",
-     *          description="Dynamic API name from config",
-     *          required=true,
-     *          @OA\Schema(type="string", default="die.niang")
-     *      ),
      *      @OA\Parameter(
      *          name="id",
      *          in="path",
@@ -651,19 +616,12 @@ class CompteController extends Controller
 
     /**
      * @OA\Delete(
-     *      path="/api/v1/{api_name}/comptes/{id}",
+     *      path="/api/v1/comptes/{id}",
      *      operationId="deleteCompte",
      *      tags={"Comptes"},
      *      summary="Soft delete a specific compte",
      *      description="Soft deletes a compte by its ID, marking its status as 'ferme' and setting dateFermeture.",
      *      security={{"bearerAuth":{}}},
-     *      @OA\Parameter(
-     *          name="api_name",
-     *          in="path",
-     *          description="Dynamic API name from config",
-     *          required=true,
-     *          @OA\Schema(type="string", default="die.niang")
-     *      ),
      *      @OA\Parameter(
      *          name="id",
      *          in="path",
@@ -751,19 +709,12 @@ class CompteController extends Controller
 
     /**
      * @OA\Post(
-     *      path="/api/v1/{api_name}/comptes/{id}/bloquer",
+     *      path="/api/v1/comptes/{id}/bloquer",
      *      operationId="blockCompte",
      *      tags={"Comptes"},
      *      summary="Block a specific compte",
      *      description="Blocks a compte by its ID with a motif and duration",
      *      security={{"bearerAuth":{}}},
-     *      @OA\Parameter(
-     *          name="api_name",
-     *          in="path",
-     *          description="Dynamic API name from config",
-     *          required=true,
-     *          @OA\Schema(type="string", default="die.niang")
-     *      ),
      *      @OA\Parameter(
      *          name="id",
      *          in="path",
@@ -908,19 +859,12 @@ class CompteController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/api/v1/{api_name}/comptes/{id}",
+     *      path="/api/v1/comptes/{id}",
      *      operationId="getCompte",
      *      tags={"Comptes"},
      *      summary="Get a specific compte",
      *      description="Returns details of a specific compte by its ID",
      *      security={{"bearerAuth":{}}},
-     *      @OA\Parameter(
-     *          name="api_name",
-     *          in="path",
-     *          description="Dynamic API name from config",
-     *          required=true,
-     *          @OA\Schema(type="string", default="die.niang")
-     *      ),
      *      @OA\Parameter(
      *          name="id",
      *          in="path",
@@ -989,19 +933,12 @@ class CompteController extends Controller
 
     /**
      * @OA\Patch(
-     *      path="/api/v1/{api_name}/comptes/{id}",
+     *      path="/api/v1/comptes/{id}",
      *      operationId="updateCompte",
      *      tags={"Comptes"},
      *      summary="Update a specific compte",
      *      description="Updates a compte by its ID with provided fields",
      *      security={{"bearerAuth":{}}},
-     *      @OA\Parameter(
-     *          name="api_name",
-     *          in="path",
-     *          description="Dynamic API name from config",
-     *          required=true,
-     *          @OA\Schema(type="string", default="die.niang")
-     *      ),
      *      @OA\Parameter(
      *          name="id",
      *          in="path",
@@ -1148,19 +1085,12 @@ class CompteController extends Controller
 
     /**
      * @OA\Post(
-     *      path="/api/v1/{api_name}/comptes/{id}/debloquer",
+     *      path="/api/v1/comptes/{id}/debloquer",
      *      operationId="unblockCompte",
      *      tags={"Comptes"},
      *      summary="Unblock a specific compte",
      *      description="Unblocks a compte by its ID with a motif",
      *      security={{"bearerAuth":{}}},
-     *      @OA\Parameter(
-     *          name="api_name",
-     *          in="path",
-     *          description="Dynamic API name from config",
-     *          required=true,
-     *          @OA\Schema(type="string", default="die.niang")
-     *      ),
      *      @OA\Parameter(
      *          name="id",
      *          in="path",

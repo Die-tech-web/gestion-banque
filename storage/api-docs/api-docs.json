@@ -84,7 +84,7 @@
                 }
             }
         },
-        "/api/v1/{api_name}/comptes": {
+        "/api/v1/comptes": {
             "get": {
                 "tags": [
                     "Comptes"
@@ -93,16 +93,6 @@
                 "description": "Returns list of comptes",
                 "operationId": "getComptesList",
                 "parameters": [
-                    {
-                        "name": "api_name",
-                        "in": "path",
-                        "description": "Dynamic API name from config",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "default": "die.niang"
-                        }
-                    },
                     {
                         "name": "type",
                         "in": "query",
@@ -274,18 +264,6 @@
                 "summary": "Créer un nouveau compte",
                 "description": "Crée un nouveau compte bancaire avec un client existant ou nouveau",
                 "operationId": "storeCompte",
-                "parameters": [
-                    {
-                        "name": "api_name",
-                        "in": "path",
-                        "description": "Dynamic API name from config",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "default": "die.niang"
-                        }
-                    }
-                ],
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -521,7 +499,7 @@
                 }
             }
         },
-        "/api/v1/{api_name}/comptes/non-archives": {
+        "/api/v1/comptes/non-archives": {
             "get": {
                 "tags": [
                     "Comptes"
@@ -530,16 +508,6 @@
                 "description": "Returns list of non-archived comptes",
                 "operationId": "getNonArchivedComptesList",
                 "parameters": [
-                    {
-                        "name": "api_name",
-                        "in": "path",
-                        "description": "Dynamic API name from config",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "default": "die.niang"
-                        }
-                    },
                     {
                         "name": "type",
                         "in": "query",
@@ -690,7 +658,7 @@
                 ]
             }
         },
-        "/api/v1/{api_name}/comptes/archives": {
+        "/api/v1/comptes/archives": {
             "get": {
                 "tags": [
                     "Comptes"
@@ -699,16 +667,6 @@
                 "description": "Returns list of archived comptes",
                 "operationId": "getArchivedComptesList",
                 "parameters": [
-                    {
-                        "name": "api_name",
-                        "in": "path",
-                        "description": "Dynamic API name from config",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "default": "die.niang"
-                        }
-                    },
                     {
                         "name": "type",
                         "in": "query",
@@ -901,7 +859,7 @@
                 ]
             }
         },
-        "/api/v1/{api_name}/comptes/{id}/archiver": {
+        "/api/v1/comptes/{id}/archiver": {
             "post": {
                 "tags": [
                     "Comptes"
@@ -910,16 +868,6 @@
                 "description": "Archives a compte by its ID",
                 "operationId": "archiveCompte",
                 "parameters": [
-                    {
-                        "name": "api_name",
-                        "in": "path",
-                        "description": "Dynamic API name from config",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "default": "die.niang"
-                        }
-                    },
                     {
                         "name": "id",
                         "in": "path",
@@ -1000,7 +948,7 @@
                 ]
             }
         },
-        "/api/v1/{api_name}/comptes/{id}": {
+        "/api/v1/comptes/{id}": {
             "get": {
                 "tags": [
                     "Comptes"
@@ -1009,16 +957,6 @@
                 "description": "Returns details of a specific compte by its ID",
                 "operationId": "getCompte",
                 "parameters": [
-                    {
-                        "name": "api_name",
-                        "in": "path",
-                        "description": "Dynamic API name from config",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "default": "die.niang"
-                        }
-                    },
                     {
                         "name": "id",
                         "in": "path",
@@ -1109,16 +1047,6 @@
                 "description": "Soft deletes a compte by its ID, marking its status as 'ferme' and setting dateFermeture.",
                 "operationId": "deleteCompte",
                 "parameters": [
-                    {
-                        "name": "api_name",
-                        "in": "path",
-                        "description": "Dynamic API name from config",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "default": "die.niang"
-                        }
-                    },
                     {
                         "name": "id",
                         "in": "path",
@@ -1229,16 +1157,6 @@
                 "description": "Updates a compte by its ID with provided fields",
                 "operationId": "updateCompte",
                 "parameters": [
-                    {
-                        "name": "api_name",
-                        "in": "path",
-                        "description": "Dynamic API name from config",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "default": "die.niang"
-                        }
-                    },
                     {
                         "name": "id",
                         "in": "path",
@@ -1430,7 +1348,7 @@
                 ]
             }
         },
-        "/api/v1/{api_name}/comptes/{id}/bloquer": {
+        "/api/v1/comptes/{id}/bloquer": {
             "post": {
                 "tags": [
                     "Comptes"
@@ -1439,16 +1357,6 @@
                 "description": "Blocks a compte by its ID with a motif and duration",
                 "operationId": "blockCompte",
                 "parameters": [
-                    {
-                        "name": "api_name",
-                        "in": "path",
-                        "description": "Dynamic API name from config",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "default": "die.niang"
-                        }
-                    },
                     {
                         "name": "id",
                         "in": "path",
@@ -1615,7 +1523,7 @@
                 ]
             }
         },
-        "/api/v1/{api_name}/comptes/{id}/debloquer": {
+        "/api/v1/comptes/{id}/debloquer": {
             "post": {
                 "tags": [
                     "Comptes"
@@ -1624,16 +1532,6 @@
                 "description": "Unblocks a compte by its ID with a motif",
                 "operationId": "unblockCompte",
                 "parameters": [
-                    {
-                        "name": "api_name",
-                        "in": "path",
-                        "description": "Dynamic API name from config",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "default": "die.niang"
-                        }
-                    },
                     {
                         "name": "id",
                         "in": "path",

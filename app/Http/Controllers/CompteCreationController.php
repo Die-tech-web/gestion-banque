@@ -25,18 +25,11 @@ class CompteCreationController extends Controller
 
     /**
      * @OA\Post(
-     *      path="/api/v1/{api_name}/comptes",
+     *      path="/api/v1/comptes",
      *      operationId="storeCompte",
      *      tags={"Comptes"},
      *      summary="Créer un nouveau compte",
      *      description="Crée un nouveau compte bancaire avec un client existant ou nouveau",
-     *      @OA\Parameter(
-     *          name="api_name",
-     *          in="path",
-     *          description="Dynamic API name from config",
-     *          required=true,
-     *          @OA\Schema(type="string", default="die.niang")
-     *      ),
      *      @OA\RequestBody(
      *          required=true,
      *          @OA\JsonContent(

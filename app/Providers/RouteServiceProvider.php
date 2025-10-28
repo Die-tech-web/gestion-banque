@@ -33,9 +33,9 @@ class RouteServiceProvider extends ServiceProvider
             Route::middleware('api')
                 ->post('/api/login', 'App\Http\Controllers\AuthController@login');
 
-            // Routes API avec prefix dynamique
+            // Routes API avec prefix simple
             Route::middleware('api')
-                ->prefix('api/v1/' . config('api.name'))
+                ->prefix('api/v1')
                 ->group(base_path('routes/api.php'));
 
             Route::middleware('web')
