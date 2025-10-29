@@ -28,11 +28,13 @@ class DebloquerCompteJob implements ShouldQueue
     public function handle(): void
     {
         // Récupérer les comptes archivés dans Neon dont la date de déblocage est dépassée
+        // Contrainte: Seul les comptes épargne bloqués dont la date de fin de blocage est échue peuvent être désarchivés
         $archivedComptes = DB::connection('neon')
             ->table('archived_comptes')
+            ->where('type', 'epargne')
             ->where('statut', 'bloque')
-            ->whereNotNull('dateDeblocagePrevue')
-            ->where('dateDeblocagePrevue', '<=', now())
+            ->whereNotNull('datedeblocageprevue')
+            ->where('datedeblocageprevue', '<=', now())
             ->get();
 
         foreach ($archivedComptes as $archivedCompte) {

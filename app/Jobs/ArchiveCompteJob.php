@@ -37,6 +37,18 @@ class ArchiveCompteJob implements ShouldQueue
             return;
         }
 
+        // Vérifier les contraintes d'archivage
+        // Seul les comptes épargne bloqués dont la date de début de blocage est échue peuvent être archivés
+        if ($compte->type !== 'epargne' || $compte->statut !== 'bloque') {
+            \Log::info("Compte {$this->compteId} non éligible pour archivage (type: {$compte->type}, statut: {$compte->statut})");
+            return;
+        }
+
+        if (!$compte->dateBlocage || !\Carbon\Carbon::parse($compte->dateBlocage)->isPast() && !\Carbon\Carbon::parse($compte->dateBlocage)->isToday()) {
+            \Log::info("Compte {$this->compteId} pas encore éligible pour archivage (date blocage: {$compte->dateBlocage})");
+            return;
+        }
+
         // Préparer les données à archiver
         $compteData = [
             'original_id' => $compte->id,
@@ -57,10 +69,6 @@ class ArchiveCompteJob implements ShouldQueue
 
         // Utiliser la connexion Neon pour l'archivage
         DB::connection('neon')->table('archived_comptes')->insert($compteData);
-
-        // Supprimer le compte de la base principale (soft delete déjà fait)
-        // Le compte est déjà soft deleted, mais on s'assure qu'il est retiré des données actives
-        // Rien à faire ici car le soft delete retire déjà de la base active
 
         \Log::info("Compte {$this->compteId} archivé avec succès dans Neon");
     }
