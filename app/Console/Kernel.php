@@ -22,11 +22,14 @@ class Kernel extends ConsoleKernel
                 \App\Jobs\BlockCompteJob::dispatch($compte->id);
             }
         })->dailyAt('00:00'); // Run daily at midnight
-        
+
         // Schedule the check for expired blocks to run daily
         $schedule->call(function () {
             \App\Models\Compte::checkExpiredBlocks();
         })->daily();
+
+        // Schedule the job to restore expired blocked accounts from Neon archive
+        $schedule->job(new \App\Jobs\DebloquerCompteJob)->dailyAt('00:00');
     }
 
     /**

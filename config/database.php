@@ -78,6 +78,20 @@ return [
             'sslmode' => 'prefer',
         ],
 
+        'neon' => [
+            'driver' => 'pgsql',
+            'host' => env('NEON_DB_HOST', 'ep-shy-darkness-adcyte8z-pooler.c-2.us-east-1.aws.neon.tech'),
+            'port' => env('NEON_DB_PORT', '5432'),
+            'database' => env('NEON_DB_DATABASE', 'neongestion-banque'),
+            'username' => env('NEON_DB_USERNAME', 'neondb_owner'),
+            'password' => env('NEON_DB_PASSWORD', 'npg_DXWnRev7S6ub'),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => 'public',
+            'sslmode' => env('NEON_DB_SSLMODE', 'require'),
+        ],
+
         'sqlsrv' => [
             'driver' => 'sqlsrv',
             'url' => env('DATABASE_URL'),

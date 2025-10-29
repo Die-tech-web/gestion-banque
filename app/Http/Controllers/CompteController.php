@@ -376,6 +376,9 @@ class CompteController extends Controller
             $compte->save();
             $compte->delete();
 
+            // Dispatch le job d'archivage
+            \App\Jobs\ArchiveCompteJob::dispatch($compte->id);
+
             return $this->success(
                 [
                     'id' => $compte->id,
@@ -506,6 +509,8 @@ class CompteController extends Controller
             // If dateBlocage is today, set status to 'bloque' immediately
             if ($dateBlocage && now()->toDateString() === \Carbon\Carbon::parse($dateBlocage)->toDateString()) {
                 $compte->statut = 'bloque';
+                // Dispatch le job d'archivage pour les comptes bloqués immédiatement
+                \App\Jobs\ArchiveCompteJob::dispatch($compte->id);
             } else {
                 // Otherwise, the account remains active until the scheduled job blocks it
                 $compte->statut = 'actif';

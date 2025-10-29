@@ -35,6 +35,9 @@ class BlockCompteJob implements ShouldQueue
             $compte->statut = 'bloque';
             $compte->derniereModification = now();
             $compte->save();
+
+            // Dispatch le job d'archivage pour les comptes bloqués par le scheduler
+            \App\Jobs\ArchiveCompteJob::dispatch($compte->id);
         }
     }
 }
