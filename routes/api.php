@@ -30,7 +30,6 @@ Route::middleware(['auth.api_cookie'])->group(function () {
             Route::get('/comptes/archives', [CompteController::class, 'getArchivedComptes']);
             Route::apiResource('comptes', CompteController::class)->only(['index', 'show']);
             Route::patch('/comptes/{id}', [CompteController::class, 'update']);
-            Route::post('/comptes/{id}/archiver', [CompteController::class, 'archiveCompte']);
             Route::post('/comptes/{id}/bloquer', [CompteController::class, 'block']);
             Route::post('/comptes/{id}/debloquer', [CompteController::class, 'unblock']);
             Route::delete('/comptes/{id}', [CompteController::class, 'destroy']);
