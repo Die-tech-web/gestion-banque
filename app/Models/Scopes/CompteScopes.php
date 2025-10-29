@@ -43,7 +43,10 @@ trait CompteScopes
 
         // Default filter: only non-archived accounts unless explicitly requested
         if (!$request->has('archived')) {
-            $query->where('archived', false);
+            $query->where(function ($q) {
+                $q->where('archived', false)
+                  ->orWhereNull('archived'); // Also include accounts where archived is null
+            });
         }
 
         // Sorting

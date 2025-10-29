@@ -26,8 +26,6 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware(['auth.api_cookie'])->group(function () {
     Route::middleware(['auth:api'])->group(function () {
         Route::middleware(['App\Http\Middleware\LoggingMiddleware'])->group(function () {
-            Route::get('/comptes/non-archives', [CompteController::class, 'getNonArchivedComptes']);
-            Route::get('/comptes/archives', [CompteController::class, 'getArchivedComptes']);
             Route::apiResource('comptes', CompteController::class)->only(['index', 'show']);
             Route::patch('/comptes/{id}', [CompteController::class, 'update']);
             Route::middleware(['App\Http\Middleware\IsAdmin'])->group(function () {
