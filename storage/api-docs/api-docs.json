@@ -1290,31 +1290,22 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "motif",
-                                    "duree",
-                                    "unite"
+                                    "motif"
                                 ],
                                 "properties": {
                                     "motif": {
                                         "type": "string",
                                         "example": "Activité suspecte détectée"
                                     },
-                                    "duree": {
-                                        "type": "integer",
-                                        "example": 30
-                                    },
-                                    "unite": {
+                                    "dateBlocage": {
                                         "type": "string",
-                                        "enum": [
-                                            "jour",
-                                            "jours",
-                                            "semaine",
-                                            "semaines",
-                                            "mois",
-                                            "annee",
-                                            "annees"
-                                        ],
-                                        "example": "mois"
+                                        "format": "date",
+                                        "example": "2025-10-29"
+                                    },
+                                    "dateDeblocagePrevue": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-11-29"
                                     }
                                 },
                                 "type": "object"

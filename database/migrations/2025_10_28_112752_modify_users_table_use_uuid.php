@@ -22,9 +22,17 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('admins', function (Blueprint $table) {
+            $table->dropForeign(['user_id']);
+        });
+
+        Schema::table('clients', function (Blueprint $table) {
+            $table->dropForeign(['user_id']);
+        });
+
         Schema::table('users', function (Blueprint $table) {
             $table->dropPrimary('id');
-            $table->bigIncrements('id')->change();
+            $table->uuid('id')->change(); // Revert to uuid, not bigIncrements
             $table->primary('id');
         });
     }

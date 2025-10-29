@@ -33,10 +33,10 @@ class BlocageCompteRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id' => ['required', 'string', 'exists:comptes,id', new IsCompteEpargne()],
+            'id' => ['required', 'string', 'uuid', 'exists:comptes,id'],
             'motif' => 'required|string|max:255',
-            'duree' => 'required|integer|min:1',
-            'unite' => 'required|string|in:jour,jours,semaine,semaines,mois,annee,annees',
+            'dateBlocage' => 'nullable|date',
+            'dateDeblocagePrevue' => 'nullable|date|after:dateBlocage',
         ];
     }
 }

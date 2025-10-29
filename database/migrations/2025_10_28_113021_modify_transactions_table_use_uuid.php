@@ -24,7 +24,7 @@ return new class extends Migration
     {
         Schema::table('transactions', function (Blueprint $table) {
             $table->dropPrimary('id');
-            $table->bigIncrements('id')->change();
+            $table->uuid('id')->change(); // Revert to uuid, not bigIncrements
             $table->primary('id');
         });
     }

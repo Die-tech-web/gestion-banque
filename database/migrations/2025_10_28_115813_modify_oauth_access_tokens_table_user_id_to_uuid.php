@@ -24,7 +24,7 @@ return new class extends Migration
     {
         Schema::table('oauth_access_tokens', function (Blueprint $table) {
             $table->dropIndex(['user_id']);
-            $table->unsignedBigInteger('user_id')->nullable()->change();
+            $table->uuid('user_id')->nullable()->change(); // Revert to uuid, not bigint
             $table->index('user_id');
         });
     }

@@ -648,10 +648,10 @@ class CompteController extends Controller
      *          required=true,
      *          @OA\JsonContent(
      *              type="object",
-     *              required={"motif", "duree", "unite"},
+     *              required={"motif"},
      *              @OA\Property(property="motif", type="string", example="Activité suspecte détectée"),
-     *              @OA\Property(property="duree", type="integer", example=30),
-     *              @OA\Property(property="unite", type="string", enum={"jour", "jours", "semaine", "semaines", "mois", "annee", "annees"}, example="mois")
+     *              @OA\Property(property="dateBlocage", type="string", format="date", example="2025-10-29"),
+     *              @OA\Property(property="dateDeblocagePrevue", type="string", format="date", example="2025-11-29")
      *          )
      *      ),
      *      @OA\Response(
@@ -701,9 +701,9 @@ class CompteController extends Controller
      */
     public function block(BlocageCompteRequest $request, string $id): JsonResponse
     {
-        $compte = Compte::find($id);
-
-        if (!$compte) {
+        try {
+            $compte = Compte::findOrFail($id);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return $this->error(
                 $this->compteNotFound(),
                 CompteValide::httpStatusCodes()['not_found']
@@ -730,33 +730,20 @@ class CompteController extends Controller
 
         try {
             $motif = $request->input('motif');
-            $duree = $request->input('duree');
-            $unite = $request->input('unite');
+            $dateBlocage = $request->input('dateBlocage');
+            $dateDeblocagePrevue = $request->input('dateDeblocagePrevue');
 
-            // Calculer la date de déblocage prévue
-            $dateDeblocagePrevue = now();
-            switch ($unite) {
-                case 'jour':
-                case 'jours':
-                    $dateDeblocagePrevue = $dateDeblocagePrevue->addDays($duree);
-                    break;
-                case 'semaine':
-                case 'semaines':
-                    $dateDeblocagePrevue = $dateDeblocagePrevue->addWeeks($duree);
-                    break;
-                case 'mois':
-                    $dateDeblocagePrevue = $dateDeblocagePrevue->addMonths($duree);
-                    break;
-                case 'annee':
-                case 'annees':
-                    $dateDeblocagePrevue = $dateDeblocagePrevue->addYears($duree);
-                    break;
-            }
-
-            $compte->statut = 'bloque';
             $compte->motifBlocage = $motif;
-            $compte->dateBlocage = now();
+            $compte->dateBlocage = $dateBlocage;
             $compte->dateDeblocagePrevue = $dateDeblocagePrevue;
+
+            // If dateBlocage is today, set status to 'bloque' immediately
+            if ($dateBlocage && now()->toDateString() === \Carbon\Carbon::parse($dateBlocage)->toDateString()) {
+                $compte->statut = 'bloque';
+            } else {
+                // Otherwise, the account remains active until the scheduled job blocks it
+                $compte->statut = 'actif';
+            }
             $compte->save();
 
             return $this->success(
@@ -826,14 +813,18 @@ class CompteController extends Controller
      */
     public function show(string $id): JsonResponse
     {
-        $compte = Compte::with(['client.user', 'transactions'])->find($id);
-
-        if (!$compte) {
+        try {
+            $compte = Compte::with(['client.user', 'transactions'])->findOrFail($id);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return $this->error(
                 $this->compteNotFound(),
                 CompteValide::httpStatusCodes()['not_found']
             );
         }
+
+        // Check and unblock if expired, then refresh the model instance
+        $compte->checkAndUnblockExpired();
+        $compte->refresh(); // Refresh the model to get the updated status
 
         $user = Auth::user();
         $isAdmin = (bool) $user->admin;
@@ -959,23 +950,23 @@ class CompteController extends Controller
             $data = $request->validated();
 
             // Mettre à jour le titulaire si fourni
-            if (isset($data['titulaire'])) {
+            if (isset($data['titulaire']) && $compte->client && $compte->client->user) {
                 $compte->client->user->name = $data['titulaire'];
                 $compte->client->user->save();
             }
 
             // Mettre à jour les informations client si fournies
-            if (isset($data['informationsClient'])) {
+            if (isset($data['informationsClient']) && $compte->client) {
                 $clientData = $data['informationsClient'];
 
                 if (isset($clientData['telephone'])) {
                     $compte->client->telephone = $clientData['telephone'];
                 }
-                if (isset($clientData['email'])) {
+                if (isset($clientData['email']) && $compte->client->user) {
                     $compte->client->user->email = $clientData['email'];
                     $compte->client->user->save();
                 }
-                if (isset($clientData['password'])) {
+                if (isset($clientData['password']) && $compte->client->user) {
                     $compte->client->user->password = bcrypt($clientData['password']);
                     $compte->client->user->save();
                 }
@@ -1073,9 +1064,9 @@ class CompteController extends Controller
      */
     public function unblock(DeblocageCompteRequest $request, string $id): JsonResponse
     {
-        $compte = Compte::find($id);
-
-        if (!$compte) {
+        try {
+            $compte = Compte::findOrFail($id);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return $this->error(
                 $this->compteNotFound(),
                 CompteValide::httpStatusCodes()['not_found']

@@ -15,6 +15,16 @@ class DeblocageCompteRequest extends FormRequest
     }
 
     /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'id' => $this->route('id'),
+        ]);
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
@@ -22,6 +32,7 @@ class DeblocageCompteRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'id' => ['required', 'string', 'uuid', 'exists:comptes,id'],
             'motif' => 'required|string|max:255',
         ];
     }
