@@ -284,7 +284,6 @@ class CompteController extends Controller
         // Pour les tests, on permet l'accès sans authentification si pas d'utilisateur
         if (!$user) {
             $comptes = Compte::withTrashed()
-                ->actif() // Filtrer uniquement les comptes actifs par défaut
                 ->applyFiltersAndPagination($request)
                 ->paginate($limit);
         } else {

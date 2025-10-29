@@ -24,6 +24,9 @@ trait CompteScopes
         }
         if ($request->has('statut')) {
             $query->where('statut', $request->statut);
+        } else {
+            // Default filter: only active accounts unless status filter is explicitly provided
+            $query->where('statut', 'actif');
         }
         if ($request->has('archived')) {
             $query->where('archived', $request->boolean('archived'));
