@@ -14,7 +14,18 @@ class StoreCompteRequest extends FormRequest
     public function authorize(): bool
     {
         // Vérifier que l'utilisateur est authentifié et est un admin
-        return auth()->check() && auth()->user() && auth()->user()->admin()->exists();
+        $isAuthenticated = auth()->check();
+        $user = auth()->user();
+        $isAdmin = false;
+
+        if ($isAuthenticated && $user) {
+            $isAdmin = $user->admin()->exists();
+            \Log::info('StoreCompteRequest authorize: User ID: ' . $user->id . ', Is Authenticated: ' . ($isAuthenticated ? 'true' : 'false') . ', Is Admin: ' . ($isAdmin ? 'true' : 'false'));
+        } else {
+            \Log::info('StoreCompteRequest authorize: Not authenticated or user is null.');
+        }
+
+        return $isAuthenticated && $user && $isAdmin;
     }
 
     /**
@@ -29,11 +40,11 @@ class StoreCompteRequest extends FormRequest
             'soldeInitial' => 'required|numeric|min:10000',
             'devise' => 'required|in:FCFA,USD,EUR',
             'client' => 'required|array',
-            'client.id' => 'nullable|integer|exists:clients,id',
+            'client.id' => 'nullable|string|exists:clients,id', // Changé en string pour UUID
             'client.titulaire' => 'required_if:client.id,null|string|max:255',
-            'client.nci' => ['required_if:client.id,null', new NciRule(), 'unique:clients,nci'],
-            'client.email' => 'required_if:client.id,null|email|unique:users,email',
-            'client.telephone' => ['required_if:client.id,null', new SenegalPhoneRule(), 'unique:clients,telephone'],
+            'client.nci' => ['required_if:client.id,null', new NciRule()],
+            'client.email' => 'required_if:client.id,null|email',
+            'client.telephone' => ['required_if:client.id,null', new SenegalPhoneRule()],
             'client.adresse' => 'required_if:client.id,null|string|max:500',
         ];
     }

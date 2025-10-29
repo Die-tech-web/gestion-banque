@@ -32,10 +32,10 @@ class NciRule implements ValidationRule
             return;
         }
 
-        // Vérifier le genre (dernier chiffre : 1 pour garçon, 2 pour fille)
-        $genre = substr($value, -1);
+        // Vérifier le genre (premier chiffre : 1 pour garçon, 2 pour fille)
+        $genre = substr($value, 0, 1);
         if ($genre !== '1' && $genre !== '2') {
-            $fail('Le dernier chiffre du :attribute doit être 1 pour un garçon ou 2 pour une fille.');
+            $fail('Le premier chiffre du :attribute doit être 1 pour un garçon ou 2 pour une fille.');
             return;
         }
     }

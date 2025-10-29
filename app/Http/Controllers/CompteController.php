@@ -289,7 +289,6 @@ class CompteController extends Controller
                 ->paginate($limit);
         } else {
             $comptes = Compte::withTrashed()->applyUserPermissions($user)
-                ->actif() // Filtrer uniquement les comptes actifs par défaut
                 ->applyFiltersAndPagination($request)
                 ->paginate($limit);
         }
@@ -914,7 +913,7 @@ class CompteController extends Controller
         }
 
         $user = Auth::user();
-        $isAdmin = $user->admin()->exists();
+        $isAdmin = (bool) $user->admin;
 
         // Vérifier les permissions : admin voit tous les comptes, client seulement les siens
         if (!$isAdmin && (!$user->client || $compte->client_id !== $user->client->id)) {
@@ -1024,7 +1023,7 @@ class CompteController extends Controller
 
         // Vérifier les permissions : admin voit tous les comptes, client seulement les siens
         $user = Auth::user();
-        $isAdmin = $user->admin()->exists();
+        $isAdmin = (bool) $user->admin;
 
         if (!$isAdmin && (!$user->client || $compte->client_id !== $user->client->id)) {
             return $this->error(

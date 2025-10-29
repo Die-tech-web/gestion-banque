@@ -128,6 +128,16 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Test Token
+    |--------------------------------------------------------------------------
+    |
+    | Token spécial pour les tests en développement. À ne pas utiliser en production.
+    |
+    */
+    'test_token' => env('APP_TEST_TOKEN', 'test-token-secure-123'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Maintenance Mode Driver
     |--------------------------------------------------------------------------
     |
@@ -168,6 +178,7 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
+        Laravel\Passport\PassportServiceProvider::class,
 
     ])->toArray(),
 

@@ -496,7 +496,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/v1/comptes/non-archives": {
@@ -1811,6 +1816,11 @@
         {
             "name": "Comptes",
             "description": "API Endpoints for Compte Management"
+        }
+    ],
+    "security": [
+        {
+            "bearerAuth": []
         }
     ]
 }

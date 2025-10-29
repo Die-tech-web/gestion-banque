@@ -32,6 +32,17 @@ class ApiResponseMiddleware
                 ], 401);
             }
 
+            if ($response->getStatusCode() === 403) {
+                // Convertir les erreurs 403 en erreurs JSON
+                return response()->json([
+                    'success' => false,
+                    'error' => [
+                        'code' => 'ACCESS_DENIED',
+                        'message' => 'Accès refusé'
+                    ]
+                ], 403);
+            }
+
             // Assurer que le content-type est JSON
             $response->headers->set('Content-Type', 'application/json');
 

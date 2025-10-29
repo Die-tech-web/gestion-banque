@@ -43,4 +43,5 @@ USER laravel
 
 EXPOSE 8000
 
+# Default command - can be overridden in docker-compose.yml
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]

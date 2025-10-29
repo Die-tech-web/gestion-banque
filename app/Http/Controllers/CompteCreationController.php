@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Events\SendClientNotification;
 use App\Http\Requests\StoreCompteRequest;
+use App\Jobs\CreateAccountJob;
 use App\Models\Client;
 use App\Models\Compte;
 use App\Models\User;
+use App\Rules\CompteValide;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -104,117 +106,37 @@ class CompteCreationController extends Controller
      *                  @OA\Property(property="message", type="string", example="Une erreur inattendue s'est produite")
      *              )
      *          )
-     *      )
+     *      ),
+     *      security={{"bearerAuth":{}}}
      * )
      */
     public function store(StoreCompteRequest $request)
     {
-        // Vérifier que l'utilisateur authentifié est un admin
-        $user = auth()->user();
-        if (!$user || !$user->admin) {
-            return $this->error(CompteValide::errorMessages()['unauthorized'], CompteValide::httpStatusCodes()['forbidden']);
-        }
-
-        DB::beginTransaction();
-
         try {
             $clientData = $request->input('client');
-            $client = null;
-
-            // Vérifier si le client existe ou le créer
-            if (isset($clientData['id'])) {
-                $client = Client::findOrFail($clientData['id']);
-            } else {
-                // Créer un nouvel utilisateur
-                $password = Str::random(12);
-                $codeAuthentification = Str::random(6);
-
-                $user = User::create([
-                    'name' => $clientData['titulaire'],
-                    'email' => $clientData['email'],
-                    'password' => Hash::make($password),
-                ]);
-
-                // Créer le client
-                $client = Client::create([
-                    'user_id' => $user->id,
-                    'adresse' => $clientData['adresse'],
-                    'telephone' => $clientData['telephone'],
-                    'nci' => $clientData['nci'],
-                    'code_authentification' => $codeAuthentification,
-                ]);
-            }
-
-            // Générer un numéro de compte unique
-            $numeroCompte = $this->generateNumeroCompte();
-
-            // Créer le compte
-            $compte = Compte::create([
-                'numeroCompte' => $numeroCompte,
-                'client_id' => $client->id,
+            $compteData = [
                 'type' => $request->input('type'),
                 'devise' => $request->input('devise'),
-                'dateCreation' => now(),
-                'statut' => 'actif',
-                'derniereModification' => now(),
-                'version' => 1,
-            ]);
+                'soldeInitial' => $request->input('soldeInitial'),
+            ];
 
-            // Créer une transaction initiale pour le solde initial
-            $compte->transactions()->create([
-                'type' => 'depot',
-                'montant' => $request->input('soldeInitial'),
-                'description' => 'Solde initial',
-                'dateTransaction' => now(),
-            ]);
+            $isNewClient = !isset($clientData['id']);
 
-            DB::commit();
+            // Dispatcher le job pour la création asynchrone du compte
+            CreateAccountJob::dispatch($clientData, $compteData, $isNewClient);
 
-            // Envoyer les notifications si c'est un nouveau client
-            if (!isset($clientData['id'])) {
-                event(new SendClientNotification($client, $password, $codeAuthentification));
-            }
-
+            // Retourner une réponse immédiate
             return $this->success([
-                'id' => $compte->id,
-                'numeroCompte' => $compte->numeroCompte,
-                'titulaire' => $client->user->name,
-                'type' => $compte->type,
-                'solde' => $compte->solde,
-                'devise' => $compte->devise,
-                'dateCreation' => $compte->dateCreation->toIso8601String(),
-                'statut' => $compte->statut,
-                'metadata' => [
-                    'derniereModification' => $compte->derniereModification->toIso8601String(),
-                    'version' => $compte->version,
-                ],
-            ], CompteValide::successMessages()['compte_created'], CompteValide::httpStatusCodes()['created']);
+                'message' => 'Votre demande de création de compte a été prise en compte avec succès. Un email et un SMS de confirmation vous seront envoyés.',
+                'status' => 'processing'
+            ], 'Demande de création de compte enregistrée', CompteValide::httpStatusCodes()['accepted']);
 
-        } catch (\Illuminate\Database\QueryException $e) {
-            DB::rollBack();
-
-            // Vérifier si c'est une erreur de contrainte d'unicité
-            if ($e->getCode() == 23000) {
-                return $this->error(
-                    'Une erreur de contrainte d\'unicité s\'est produite. Vérifiez que l\'email, le téléphone ou le NCI ne sont pas déjà utilisés.',
-                    CompteValide::httpStatusCodes()['bad_request']
-                );
-            }
-
-            return $this->error(
-                CompteValide::errorMessages()['unexpected_error'],
-                CompteValide::httpStatusCodes()['internal_server_error']
-            );
         } catch (\Illuminate\Validation\ValidationException $e) {
-            DB::rollBack();
-
             return $this->error(
                 'Données de validation invalides: ' . $e->getMessage(),
                 CompteValide::httpStatusCodes()['bad_request']
             );
         } catch (\Exception $e) {
-            DB::rollBack();
-
             return $this->error(
                 CompteValide::errorMessages()['unexpected_error'],
                 CompteValide::httpStatusCodes()['internal_server_error']
@@ -222,9 +144,23 @@ class CompteCreationController extends Controller
         }
     }
 
-    // Méthode pour créer des comptes sans authentification (pour les tests)
+    // Méthode pour créer des comptes avec contournement sécurisé (pour les tests)
     public function storeTest(Request $request)
     {
+        // Vérifier si on est en environnement de développement ou si un token spécial est fourni
+        $isDevelopment = app()->environment('local', 'development');
+        $hasTestToken = $request->header('X-Test-Token') === config('app.test_token', 'test-token-secure-123');
+
+        if (!$isDevelopment && !$hasTestToken) {
+            return response()->json([
+                'success' => false,
+                'error' => [
+                    'code' => 'ACCESS_DENIED',
+                    'message' => 'Accès refusé. Cette route est réservée aux tests en développement.'
+                ]
+            ], 403);
+        }
+
         // Créer une instance de StoreCompteRequest avec les données de la requête
         $storeRequest = new StoreCompteRequest();
         $storeRequest->merge($request->all());

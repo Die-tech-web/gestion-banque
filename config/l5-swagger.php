@@ -107,7 +107,11 @@ return [
                     'bearerFormat' => 'JWT',
                 ],
             ],
-            'security' => [],
+            'security' => [
+                [
+                    'bearerAuth' => []
+                ]
+            ],
         ],
 
         'generate_always' => env('L5_SWAGGER_GENERATE_ALWAYS', true),
@@ -132,7 +136,7 @@ return [
         ],
 
         'constants' => [
-            'L5_SWAGGER_CONST_HOST' => env('L5_SWAGGER_CONST_HOST', 'http://127.0.0.1:8000'),
+            'L5_SWAGGER_CONST_HOST' => env('L5_SWAGGER_CONST_HOST', 'https://gestion-banque.onrender.com'),
         ],
     ],
 ];
