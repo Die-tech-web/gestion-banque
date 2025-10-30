@@ -29,6 +29,12 @@ Route::get('/api/v1/{name}/documentation', function ($name) {
     return redirect('/api/documentation');
 });
 
+// Route alternative pour compatibilité
+Route::get('/{name}/api/documentation', function ($name) {
+    Config::set('l5-swagger.defaults.paths.base', '/api/v1/' . $name);
+    return redirect('/api/documentation');
+});
+
 // OAuth routes
 Route::post('/oauth/token', [AccessTokenController::class, 'issueToken']);
 Route::get('/oauth/authorize', [AccessTokenController::class, 'authorize']);

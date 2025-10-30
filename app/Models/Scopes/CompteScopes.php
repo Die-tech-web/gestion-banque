@@ -1,4 +1,4 @@
-<?php
+git <?php
 
 namespace App\Models\Scopes;
 
@@ -77,16 +77,13 @@ trait CompteScopes
      */
     public function scopeApplyUserPermissions(Builder $query, $user): Builder
     {
-        $isAdmin = $user->admin()->exists();
+        $client = $user->client;
 
-        if (!$isAdmin) {
-            $client = $user->client;
-            if (!$client) {
-                // Return empty query if client doesn't exist
-                return $query->whereRaw('1 = 0');
-            }
+        if ($client) {
+            // Si l'utilisateur a un client, c'est un client normal, voir seulement ses comptes
             $query->where('client_id', $client->id);
         }
+        // Si pas de client, c'est un admin, voir tous les comptes
 
         return $query;
     }

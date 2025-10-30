@@ -113,6 +113,7 @@ class CompteValide implements ValidationRule
         return [
             'success' => 200,
             'created' => 201,
+            'accepted' => 202,
             'bad_request' => 400,
             'unauthorized' => 401,
             'forbidden' => 403,

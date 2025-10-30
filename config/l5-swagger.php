@@ -12,7 +12,7 @@ return [
 
             'routes' => [
                 // Route pour accéder à l’interface Swagger
-                'api' => 'die.niang/api/documentation',
+                'api' => 'api/documentation',
             ],
 
             'paths' => [
@@ -83,7 +83,7 @@ return [
             'views' => base_path('resources/views/vendor/l5-swagger'),
 
             // Base path utilisé uniquement par Swagger
-            'base' => env('L5_SWAGGER_BASE_PATH', null),
+            'base' => env('L5_SWAGGER_BASE_PATH', '/api/v1'),
 
             // Exclusions de scan
             'excludes' => [],

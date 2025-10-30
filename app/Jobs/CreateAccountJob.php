@@ -43,13 +43,19 @@ class CreateAccountJob implements ShouldQueue
         try {
             $client = null;
 
-            // Vérifier si le client existe par ID ou par NCI
+            // Vérifier si le client existe par ID, NCI ou téléphone
             if (isset($this->clientData['id'])) {
                 $client = Client::findOrFail($this->clientData['id']);
             } elseif (isset($this->clientData['nci'])) {
                 $client = Client::where('nci', $this->clientData['nci'])->first();
                 if ($client) {
                     // Utiliser le client existant trouvé par NCI
+                    $this->isNewClient = false; // Marquer comme client existant
+                }
+            } elseif (isset($this->clientData['telephone'])) {
+                $client = Client::where('telephone', $this->clientData['telephone'])->first();
+                if ($client) {
+                    // Utiliser le client existant trouvé par téléphone
                     $this->isNewClient = false; // Marquer comme client existant
                 }
             }
@@ -125,8 +131,13 @@ class CreateAccountJob implements ShouldQueue
 
         } catch (\Exception $e) {
             DB::rollBack();
-            // Log l'erreur pour debugging
-            \Log::error('Erreur lors de la création asynchrone du compte: ' . $e->getMessage());
+            // Log l'erreur pour debugging avec plus de détails
+            \Log::error('Erreur lors de la création du compte: ' . $e->getMessage(), [
+                'clientData' => $this->clientData,
+                'compteData' => $this->compteData,
+                'isNewClient' => $this->isNewClient,
+                'trace' => $e->getTraceAsString()
+            ]);
             throw $e; // Re-throw pour que le job soit marqué comme échoué
         }
     }

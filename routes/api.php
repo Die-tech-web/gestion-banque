@@ -24,7 +24,7 @@ use App\Models\User;
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware(['auth.api_cookie'])->group(function () {
-    Route::middleware(['auth:api'])->group(function () {
+    Route::middleware(['auth.api'])->group(function () {
         Route::middleware(['App\Http\Middleware\LoggingMiddleware'])->group(function () {
             Route::apiResource('comptes', CompteController::class)->only(['index', 'show']);
             Route::patch('/comptes/{id}', [CompteController::class, 'update']);
@@ -39,13 +39,10 @@ Route::middleware(['auth.api_cookie'])->group(function () {
 // Route temporaire pour tester sans authentification (supprimée pour sécurité)
 
 // Route séparée pour la création de compte (admin seulement)
-Route::middleware(['auth:api'])->middleware(['App\Http\Middleware\IsAdmin'])->middleware(['App\Http\Middleware\LoggingMiddleware'])->post('/comptes', [App\Http\Controllers\CompteCreationController::class, 'store']);
-
-// Route pour créer des comptes avec authentification admin
-Route::middleware(['auth:api'])->middleware(['App\Http\Middleware\IsAdmin'])->middleware(['App\Http\Middleware\LoggingMiddleware'])->post('/v1/comptes', [App\Http\Controllers\CompteCreationController::class, 'store']);
+Route::middleware(['auth.api', 'role:create-compte'])->middleware(['App\Http\Middleware\LoggingMiddleware'])->post('/comptes', [App\Http\Controllers\CompteCreationController::class, 'store']);
 
 // Route sécurisée pour les tests (seulement en développement ou avec token spécial)
-Route::middleware(['auth.api_cookie', 'auth:api', 'App\Http\Middleware\LoggingMiddleware'])->post('/v1/comptes/test', [App\Http\Controllers\CompteCreationController::class, 'storeTest']);
+Route::post('/comptes/test', [App\Http\Controllers\CompteCreationController::class, 'storeTest']);
 
 Route::get('/test', function () {
     return response()->json(['message' => 'Test route works!']);

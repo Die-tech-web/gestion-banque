@@ -20,6 +20,9 @@
         {
             "url": "https://gestion-banque.onrender.com",
             "description": "Gestion Compte API Server a distance"
+        },
+        {
+            "url": "/api/v1"
         }
     ],
     "paths": {

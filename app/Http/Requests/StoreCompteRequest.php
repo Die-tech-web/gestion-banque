@@ -13,19 +13,9 @@ class StoreCompteRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        // Vérifier que l'utilisateur est authentifié et est un admin
-        $isAuthenticated = auth()->check();
-        $user = auth()->user();
-        $isAdmin = false;
-
-        if ($isAuthenticated && $user) {
-            $isAdmin = $user->admin()->exists();
-            \Log::info('StoreCompteRequest authorize: User ID: ' . $user->id . ', Is Authenticated: ' . ($isAuthenticated ? 'true' : 'false') . ', Is Admin: ' . ($isAdmin ? 'true' : 'false'));
-        } else {
-            \Log::info('StoreCompteRequest authorize: Not authenticated or user is null.');
-        }
-
-        return $isAuthenticated && $user && $isAdmin;
+        // La vérification d'authentification et de rôle est maintenant gérée par les middlewares
+        // Cette méthode retourne true car l'autorisation est déléguée aux middlewares
+        return true;
     }
 
     /**

@@ -4,6 +4,7 @@ namespace App\Providers;
 
 // use Illuminate\Support\Facades\Gate;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Laravel\Passport\Passport;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -21,6 +22,13 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Passport::tokensCan([
+            'create-compte' => 'Créer un nouveau compte bancaire',
+            'view-compte' => 'Voir les détails d\'un compte',
+            'update-compte' => 'Modifier un compte',
+            'delete-compte' => 'Supprimer un compte',
+            'block-compte' => 'Bloquer un compte',
+            'unblock-compte' => 'Débloquer un compte',
+        ]);
     }
 }
