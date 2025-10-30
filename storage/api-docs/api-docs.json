@@ -22,7 +22,7 @@
             "description": "Gestion Compte API Server a distance"
         },
         {
-            "url": "/api/v1"
+            "url": "/api/v1/die.niang"
         }
     ],
     "paths": {

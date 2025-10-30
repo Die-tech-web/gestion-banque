@@ -737,6 +737,271 @@ TWILIO_FROM=your_twilio_phone_number
 - Le middleware `ApiCookieAuth` permet l'authentification via cookie ou header Bearer
 - Pour les tests, vous pouvez utiliser la route `/api/v1/die.niang/comptes/test` sans authentification
 
+## Architecture Technique de la Création de Compte
+
+Cette section décrit l'architecture technique implémentée pour la création de comptes bancaires, utilisant une approche asynchrone avec des jobs Laravel.
+
+### 1. **Architecture Générale**
+
+La création de compte suit un pattern **Controller → Job → Event** avec les composants suivants :
+
+- **`CompteCreationController`** : Point d'entrée HTTP, validation et dispatch du job
+- **`CreateAccountJob`** : Traitement asynchrone de la création
+- **`SendClientNotification`** : Événement pour les notifications
+- **`StoreCompteRequest`** : Validation des données d'entrée
+
+### 2. **Flux de Création de Compte**
+
+#### **Étape 1 : Validation et Dispatch (Controller)**
+```php
+// CompteCreationController::store()
+public function store(StoreCompteRequest $request)
+{
+    $clientData = $request->input('client');
+    $compteData = [
+        'type' => $request->input('type'),
+        'devise' => $request->input('devise'),
+        'soldeInitial' => $request->input('soldeInitial'),
+    ];
+
+    $isNewClient = !isset($clientData['id']);
+
+    // Dispatch asynchrone du job
+    CreateAccountJob::dispatch($clientData, $compteData, $isNewClient);
+
+    // Réponse immédiate
+    return $this->success([
+        'message' => 'Votre demande de création de compte a été prise en compte...',
+        'status' => 'processing'
+    ], 'Demande de création de compte enregistrée', 202);
+}
+```
+
+#### **Étape 2 : Traitement Asynchrone (Job)**
+```php
+// CreateAccountJob::handle()
+public function handle(): void
+{
+    DB::beginTransaction();
+
+    try {
+        // 1. Recherche/Création du client
+        $client = $this->findOrCreateClient();
+
+        // 2. Génération numéro de compte unique
+        $numeroCompte = $this->generateNumeroCompte();
+
+        // 3. Création du compte
+        $compte = Compte::create([...]);
+
+        // 4. Transaction initiale pour le solde
+        $compte->transactions()->create([
+            'type' => 'depot',
+            'montant' => $this->compteData['soldeInitial'],
+            'description' => 'Solde initial',
+        ]);
+
+        DB::commit();
+
+        // 5. Notifications pour nouveaux clients
+        if ($this->isNewClient) {
+            event(new SendClientNotification($client, $password, $codeAuth));
+        }
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        \Log::error('Erreur création compte: ' . $e->getMessage());
+        throw $e;
+    }
+}
+```
+
+#### **Étape 3 : Recherche/Création du Client**
+```php
+private function findOrCreateClient()
+{
+    // Recherche par ID, NCI ou téléphone
+    if (isset($this->clientData['id'])) {
+        return Client::findOrFail($this->clientData['id']);
+    }
+
+    $client = Client::where('nci', $this->clientData['nci'] ?? null)
+                   ->orWhere('telephone', $this->clientData['telephone'] ?? null)
+                   ->first();
+
+    if ($client) {
+        $this->isNewClient = false;
+        return $client;
+    }
+
+    // Création nouveau client
+    return $this->createNewClient();
+}
+```
+
+#### **Étape 4 : Création Nouveau Client**
+```php
+private function createNewClient()
+{
+    // Génération mot de passe et code d'authentification
+    $password = Str::random(12);
+    $codeAuth = Str::random(6);
+
+    // Vérifications d'unicité
+    $this->validateUniqueClientData();
+
+    // Création User
+    $user = User::create([
+        'name' => $this->clientData['titulaire'],
+        'email' => $this->clientData['email'],
+        'password' => Hash::make($password),
+    ]);
+
+    // Création Client
+    $client = Client::create([
+        'user_id' => $user->id,
+        'adresse' => $this->clientData['adresse'],
+        'telephone' => $this->clientData['telephone'],
+        'nci' => $this->clientData['nci'],
+        'email' => $this->clientData['email'],
+        'code_authentification' => $codeAuth,
+    ]);
+
+    // Stockage pour notifications
+    $this->clientData['password'] = $password;
+    $this->clientData['code_authentification'] = $codeAuth;
+
+    return $client;
+}
+```
+
+### 3. **Génération du Numéro de Compte**
+
+```php
+private function generateNumeroCompte(): string
+{
+    do {
+        $numero = 'C' . str_pad(mt_rand(1, 99999999), 8, '0', STR_PAD_LEFT);
+    } while (Compte::where('numeroCompte', $numero)->exists());
+
+    return $numero;
+}
+```
+
+### 4. **Validation des Données**
+
+#### **Règles de Validation (StoreCompteRequest)**
+```php
+public function rules(): array
+{
+    return [
+        'type' => 'required|in:cheque,epargne',
+        'soldeInitial' => 'required|numeric|min:10000',
+        'devise' => 'required|in:FCFA,USD,EUR',
+        'client' => 'required|array',
+        'client.id' => 'nullable|string|exists:clients,id',
+        'client.titulaire' => 'required_if:client.id,null|string|max:255',
+        'client.nci' => ['required_if:client.id,null', new NciRule()],
+        'client.email' => 'required_if:client.id,null|email',
+        'client.telephone' => ['required_if:client.id,null', new SenegalPhoneRule()],
+        'client.adresse' => 'required_if:client.id,null|string|max:500',
+    ];
+}
+```
+
+#### **Règles Personnalisées**
+- **`NciRule`** : Valide le format NCI sénégalais (13 chiffres)
+- **`SenegalPhoneRule`** : Valide le format téléphone sénégalais (+2217xxxxxxxx)
+
+### 5. **Gestion des Transactions et Atomicité**
+
+```php
+DB::beginTransaction();
+
+try {
+    // Création compte
+    $compte = Compte::create([...]);
+
+    // Transaction initiale
+    $compte->transactions()->create([...]);
+
+    DB::commit();
+} catch (\Exception $e) {
+    DB::rollBack();
+    throw $e;
+}
+```
+
+### 6. **Notifications Asynchrones**
+
+```php
+// Dans le Job après création
+if ($this->isNewClient) {
+    event(new SendClientNotification($client, $password, $codeAuth));
+}
+```
+
+L'événement `SendClientNotification` déclenche :
+- Envoi d'email avec identifiants
+- Envoi de SMS avec code d'authentification
+- Logging des notifications
+
+### 7. **Sécurité et Autorisation**
+
+#### **Middleware Utilisés**
+- **`auth.api`** : Authentification obligatoire
+- **`role:create-compte`** : Vérification du rôle admin
+- **`LoggingMiddleware`** : Logging des requêtes
+
+#### **Route de Test Sécurisée**
+```php
+// routes/api.php
+Route::post('/comptes/test', [CompteCreationController::class, 'storeTest']);
+```
+
+La méthode `storeTest()` :
+- Vérifie l'environnement de développement
+- Valide un token spécial `X-Test-Token`
+- Simule l'authentification admin pour les tests
+
+### 8. **Gestion d'Erreurs et Logging**
+
+#### **Gestion d'Erreurs dans le Job**
+```php
+catch (\Exception $e) {
+    DB::rollBack();
+    \Log::error('Erreur création compte: ' . $e->getMessage(), [
+        'clientData' => $this->clientData,
+        'compteData' => $this->compteData,
+        'trace' => $e->getTraceAsString()
+    ]);
+    throw $e; // Marque le job comme échoué
+}
+```
+
+#### **Réponses d'Erreur du Controller**
+- **400 Bad Request** : Données de validation invalides
+- **500 Internal Server Error** : Erreur inattendue
+
+### 9. **Optimisations et Bonnes Pratiques**
+
+#### **Performance**
+- **Traitement asynchrone** : Réponse immédiate, traitement en arrière-plan
+- **Génération unique** : Algorithme efficace pour numéros de compte
+- **Transactions DB** : Atomicité des opérations
+
+#### **Maintenabilité**
+- **Séparation des responsabilités** : Controller, Job, Event distincts
+- **Validation centralisée** : Request classes dédiées
+- **Logging détaillé** : Debugging facilité
+
+#### **Sécurité**
+- **Validation stricte** : Règles personnalisées pour données sensibles
+- **Hachage mots de passe** : Utilisation de `Hash::make()`
+- **Vérifications d'unicité** : Email, téléphone, NCI
+
+Cette architecture assure une création de compte robuste, sécurisée et évolutive, avec une séparation claire des responsabilités et une gestion appropriée des erreurs.
+
 ### 🔧 **Route de test sans authentification**
 Pour faciliter les tests, une route spéciale est disponible :
 
