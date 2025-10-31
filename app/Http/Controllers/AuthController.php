@@ -85,7 +85,11 @@ class AuthController extends Controller
         }
 
         // Créer le token avec le client password grant
-        $token = $user->createToken('API Token', [], $oauthClient->id);
+        $scopes = [];
+        if ($user->admin()->exists()) {
+            $scopes = ['create-compte', 'view-compte', 'update-compte', 'delete-compte', 'block-compte'];
+        }
+        $token = $user->createToken('API Token', $scopes, $oauthClient->id);
 
         // Générer un refresh token qui expire dans 30 jours
         $refreshToken = $user->createToken('Refresh Token', [], $oauthClient->id);

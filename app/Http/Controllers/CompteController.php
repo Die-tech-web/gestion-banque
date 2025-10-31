@@ -480,9 +480,9 @@ class CompteController extends Controller
         }
 
         // Vérification supplémentaire pour s'assurer qu'un compte chèque ne peut pas être bloqué
-        if ($compte->type === 'courant') {
+        if ($compte->type !== 'epargne') {
             return $this->error(
-                'Un compte chèque ne peut pas être bloqué.',
+                'Seuls les comptes épargne peuvent être bloqués.',
                 CompteValide::httpStatusCodes()['bad_request']
             );
         }

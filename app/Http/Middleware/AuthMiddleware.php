@@ -17,8 +17,10 @@ class AuthMiddleware
         if (!Auth::guard('api')->check()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Token d\'authentification manquant ou invalide',
-                'error' => 'UNAUTHENTICATED'
+                'error' => [
+                    'code' => 'UNAUTHENTICATED',
+                    'message' => 'Utilisateur non authentifié'
+                ]
             ], 401);
         }
 
