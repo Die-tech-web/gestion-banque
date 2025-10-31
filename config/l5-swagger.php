@@ -12,7 +12,7 @@ return [
 
             'routes' => [
                 // Route pour accéder à l’interface Swagger
-                'api' => 'die.niang/api/documentation',
+                'api' => 'api/die.niang/documentation',
             ],
 
             'paths' => [
