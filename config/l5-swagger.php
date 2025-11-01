@@ -83,7 +83,7 @@ return [
             'views' => base_path('resources/views/vendor/l5-swagger'),
 
             // Base path utilisé uniquement par Swagger
-            'base' => env('L5_SWAGGER_BASE_PATH', '/api/v1/die.niang'),
+            'base' => '/api/v1',
 
             // Exclusions de scan
             'excludes' => [],
