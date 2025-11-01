@@ -1073,19 +1073,19 @@
                 ]
             }
         },
-        "/api/v1/comptes/{id}/debloquer": {
-            "post": {
+        "/api/admin/comptes/{id}/transactions": {
+            "get": {
                 "tags": [
                     "Comptes"
                 ],
-                "summary": "Unblock a specific compte",
-                "description": "Unblocks a compte by its ID with a motif",
-                "operationId": "unblockCompte",
+                "summary": "Get list of transactions for a specific compte (Admin only)",
+                "description": "Returns list of transactions for a specific compte, including calculated balance. Accessible only by authenticated admins.",
+                "operationId": "getCompteTransactions",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "ID of the compte to unblock",
+                        "description": "ID of the compte to retrieve transactions for",
                         "required": true,
                         "schema": {
                             "type": "string",
@@ -1093,28 +1093,9 @@
                         }
                     }
                 ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "motif"
-                                ],
-                                "properties": {
-                                    "motif": {
-                                        "type": "string",
-                                        "example": "Vérification complétée"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
                 "responses": {
                     "200": {
-                        "description": "Compte unblocked successfully",
+                        "description": "Successful operation",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1125,23 +1106,57 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Compte débloqué avec succès"
+                                            "example": "Transactions retrieved successfully"
                                         },
                                         "data": {
                                             "properties": {
-                                                "id": {
-                                                    "type": "string",
-                                                    "format": "uuid",
-                                                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                                                "compte": {
+                                                    "$ref": "#/components/schemas/CompteResource"
                                                 },
-                                                "statut": {
-                                                    "type": "string",
-                                                    "example": "actif"
+                                                "transactions": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "string",
+                                                                "format": "uuid",
+                                                                "example": "550e8400-e29b-41d4-a716-446655440000"
+                                                            },
+                                                            "compte_id": {
+                                                                "type": "string",
+                                                                "format": "uuid",
+                                                                "example": "550e8400-e29b-41d4-a716-446655440000"
+                                                            },
+                                                            "type": {
+                                                                "type": "string",
+                                                                "enum": [
+                                                                    "depot",
+                                                                    "retrait"
+                                                                ],
+                                                                "example": "depot"
+                                                            },
+                                                            "montant": {
+                                                                "type": "number",
+                                                                "format": "float",
+                                                                "example": 100000
+                                                            },
+                                                            "date": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "example": "2025-10-23T12:00:00.000000Z"
+                                                            },
+                                                            "description": {
+                                                                "type": "string",
+                                                                "example": "Dépôt initial"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
                                                 },
-                                                "dateDeblocage": {
-                                                    "type": "string",
-                                                    "format": "date-time",
-                                                    "example": "2025-10-19T12:00:00Z"
+                                                "balance": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 1250000
                                                 }
                                             },
                                             "type": "object"
@@ -1172,15 +1187,15 @@
                             }
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
+                    "403": {
+                        "description": "Forbidden",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Validation failed."
+                                            "example": "Accès non autorisé."
                                         },
                                         "success": {
                                             "type": "boolean",
@@ -1200,7 +1215,7 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Échec du déblocage du compte."
+                                            "example": "Échec de la récupération des transactions."
                                         },
                                         "success": {
                                             "type": "boolean",

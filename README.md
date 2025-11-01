@@ -1359,3 +1359,180 @@ Headers:
 - La `version` du compte est automatiquement incrémentée
 - La `derniereModification` est automatiquement mise à jour
 - Les modifications sont validées avant d'être appliquées
+
+## Tests Postman pour la Liste des Transactions d'un Compte (Admin)
+
+Cette section explique comment tester la fonctionnalité de récupération de la liste des transactions d'un compte spécifique, accessible uniquement par les administrateurs.
+
+### Prérequis
+- Application Laravel démarrée
+- Authentification avec Passport (token Bearer requis)
+- Base de données configurée avec des comptes et des transactions existantes
+- Avoir un compte existant avec un ID connu
+
+### Étapes pour obtenir un token d'authentification (Admin)
+
+#### 1. Connexion Admin
+**Requête POST :**
+```
+URL: http://127.0.0.1:8000/api/login
+Method: POST
+Headers:
+  Accept: application/json
+  Content-Type: application/json
+Body (raw JSON):
+{
+  "email": "admin@example.com",
+  "password": "password"
+}
+```
+
+**✅ Réponse attendue (200 OK) :**
+```json
+{
+  "access_token": "your_passport_token_here",
+  "token_type": "Bearer",
+  "expires_in": 31536000,
+  "refresh_token": null
+}
+```
+
+#### 2. Utilisation du Token
+Pour toutes les requêtes suivantes, ajoutez l'header Authorization :
+```
+Authorization: Bearer {votre_token_passport}
+Accept: application/json
+Content-Type: application/json
+```
+
+---
+
+### 🧪 **Test 1: Récupération des transactions d'un compte existant (Admin)**
+
+**Requête GET :**
+```
+URL: http://127.0.0.1:8000/api/admin/comptes/{id}/transactions
+Method: GET
+Headers:
+  Authorization: Bearer {token_admin}
+  Accept: application/json
+```
+Remplacez `{id}` par l'ID réel d'un compte existant.
+
+**✅ Réponse attendue (200 OK) :**
+```json
+{
+  "success": true,
+  "message": "Transactions retrieved successfully",
+  "data": {
+    "compte": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "numeroCompte": "C00123456",
+      "titulaire": "Amadou Diallo",
+      "type": "epargne",
+      "solde": 1250000,
+      "devise": "FCFA",
+      "dateCreation": "2023-03-15T00:00:00Z",
+      "statut": "actif",
+      "metadata": {
+        "derniereModification": "2025-10-19T11:00:00Z",
+        "version": 1
+      }
+    },
+    "transactions": [
+      {
+        "id": "transaction-uuid-1",
+        "compte_id": "550e8400-e29b-41d4-a716-446655440000",
+        "type": "depot",
+        "montant": 750000,
+        "date": "2023-03-15T00:00:00.000000Z",
+        "description": "Dépôt initial"
+      },
+      {
+        "id": "transaction-uuid-2",
+        "compte_id": "550e8400-e29b-41d4-a716-446655440000",
+        "type": "retrait",
+        "montant": 150000,
+        "date": "2023-03-20T00:00:00.000000Z",
+        "description": "Paiement loyer"
+      },
+      {
+        "id": "transaction-uuid-3",
+        "compte_id": "550e8400-e29b-41d4-a716-446655440000",
+        "type": "depot",
+        "montant": 500000,
+        "date": "2023-04-05T00:00:00.000000Z",
+        "description": "Virement salaire"
+      },
+      {
+        "id": "transaction-uuid-4",
+        "compte_id": "550e8400-e29b-41d4-a716-446655440000",
+        "type": "depot",
+        "montant": 250000,
+        "date": "2023-04-10T00:00:00.000000Z",
+        "description": "Dépôt mensuel"
+      }
+    ],
+    "balance": 1350000
+  }
+}
+```
+Note: The `balance` will be calculated as `sum(depot) - sum(retrait)`. In the example above: `(750000 + 500000 + 250000) - 150000 = 1500000 - 150000 = 1350000`.
+
+---
+
+### 🧪 **Test 2: Compte non trouvé**
+
+**Requête GET :**
+```
+URL: http://127.0.0.1:8000/api/admin/comptes/non-existent-uuid/transactions
+Method: GET
+Headers:
+  Authorization: Bearer {token_admin}
+  Accept: application/json
+```
+
+**❌ Réponse attendue (404 Not Found) :**
+```json
+{
+  "success": false,
+  "message": "Compte non trouvé."
+}
+```
+
+---
+
+### 🧪 **Test 3: Accès non autorisé (non-admin)**
+
+**Requête GET :**
+```
+URL: http://127.0.0.1:8000/api/admin/comptes/{id}/transactions
+Method: GET
+Headers:
+  Authorization: Bearer {token_client}  # Token d'un client ou utilisateur non-admin
+  Accept: application/json
+```
+
+**❌ Réponse attendue (403 Forbidden) :**
+```json
+{
+  "success": false,
+  "message": "Accès non autorisé. Seuls les administrateurs peuvent voir les transactions."
+}
+```
+
+---
+
+### 📋 **Résumé des Tests de Liste des Transactions**
+
+| Test | Description | Résultat Attendu |
+|------|-------------|------------------|
+| 1 | Transactions compte existant (Admin) | ✅ 200 OK avec liste et solde |
+| 2 | Compte non trouvé | ❌ 404 Not Found |
+| 3 | Accès non autorisé (non-admin) | ❌ 403 Forbidden |
+
+### ⚠️ **Notes importantes**
+- L'endpoint est protégé par le middleware `IsAdmin`.
+- Le solde est calculé dynamiquement en sommant les dépôts et soustrayant les retraits.
+- Les transactions sont triées par date décroissante.
+- Le `CompteResource` est utilisé pour formater les détails du compte.

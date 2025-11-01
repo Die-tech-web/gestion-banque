@@ -44,11 +44,11 @@ class Transaction extends Model
         'montant',
         'devise',
         'description',
-        'dateTransaction',
+        'date',
     ];
 
     protected $casts = [
-        'dateTransaction' => 'datetime',
+        'date' => 'datetime',
     ];
 
     public function compte()

@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\CompteController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\TransactionController;
 use App\Models\User;
 
 /*
@@ -31,6 +32,7 @@ Route::middleware(['auth.api_cookie'])->group(function () {
             Route::middleware(['App\Http\Middleware\IsAdmin'])->group(function () {
                 Route::post('/comptes/{id}/bloquer', [CompteController::class, 'block']);
                 Route::post('/comptes/{id}/debloquer', [CompteController::class, 'unblock']);
+                Route::get('/admin/comptes/{id}/transactions', [TransactionController::class, 'showByCompte']);
             });
             Route::delete('/comptes/{id}', [CompteController::class, 'destroy']);
         });

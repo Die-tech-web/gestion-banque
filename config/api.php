@@ -1,5 +1,5 @@
 <?php
 
 return [
-    'name' => 'die.niang',
+    'name' => 'die.niangdie.niang',
 ];

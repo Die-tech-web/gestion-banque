@@ -29,6 +29,17 @@ class AuthServiceProvider extends ServiceProvider
             'delete-compte' => 'Supprimer un compte',
             'block-compte' => 'Bloquer un compte',
             'unblock-compte' => 'Débloquer un compte',
+            'view-transactions' => 'Voir les transactions d\'un compte',
+        ]);
+
+        Passport::setDefaultScope([
+            'create-compte',
+            'view-compte',
+            'update-compte',
+            'delete-compte',
+            'block-compte',
+            'unblock-compte',
+            'view-transactions',
         ]);
     }
 }

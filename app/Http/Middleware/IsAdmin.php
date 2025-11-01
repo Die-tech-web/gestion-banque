@@ -29,8 +29,11 @@ class IsAdmin
             ], 401);
         }
 
-        // Charger la relation admin et vérifier si l'utilisateur a un rôle admin
-        if (!$user->admin()->exists()) {
+        // Charger explicitement la relation admin
+        $user->load('admin');
+
+        // Vérifier si l'utilisateur a un rôle admin
+        if (!$user->admin) {
             return response()->json([
                 'success' => false,
                 'error' => [

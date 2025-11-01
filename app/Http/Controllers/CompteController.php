@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request; 
 use App\Rules\CompteValide; // Import the custom rule
 use App\Models\Client; // Import Client model
+use App\Services\TransactionService; // Import TransactionService
 use App\Traits\ApiResponseTrait;
 use App\Traits\CompteMessages;
 use Symfony\Component\HttpFoundation\Response;
@@ -833,6 +834,108 @@ class CompteController extends Controller
      *      )
      * )
      */
+    /**
+     * @OA\Get(
+     *      path="/api/admin/comptes/{id}/transactions",
+     *      operationId="getCompteTransactions",
+     *      tags={"Comptes"},
+     *      summary="Get list of transactions for a specific compte (Admin only)",
+     *      description="Returns list of transactions for a specific compte, including calculated balance. Accessible only by authenticated admins.",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *          name="id",
+     *          in="path",
+     *          description="ID of the compte to retrieve transactions for",
+     *          required=true,
+     *          @OA\Schema(type="string", format="uuid")
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="success", type="boolean", example=true),
+     *              @OA\Property(property="message", type="string", example="Transactions retrieved successfully"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="compte", ref="#/components/schemas/CompteResource"),
+     *                  @OA\Property(property="transactions", type="array", @OA\Items(
+     *                      @OA\Property(property="id", type="string", format="uuid", example="550e8400-e29b-41d4-a716-446655440000"),
+     *                      @OA\Property(property="compte_id", type="string", format="uuid", example="550e8400-e29b-41d4-a716-446655440000"),
+     *                      @OA\Property(property="type", type="string", enum={"depot", "retrait"}, example="depot"),
+     *                      @OA\Property(property="montant", type="number", format="float", example=100000),
+     *                      @OA\Property(property="date", type="string", format="date-time", example="2025-10-23T12:00:00.000000Z"),
+     *                      @OA\Property(property="description", type="string", example="Dépôt initial")
+     *                  )),
+     *                  @OA\Property(property="balance", type="number", format="float", example=1250000)
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Compte not found",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="Compte non trouvé."),
+     *              @OA\Property(property="success", type="boolean", example=false)
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=403,
+     *          description="Forbidden",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="Accès non autorisé."),
+     *              @OA\Property(property="success", type="boolean", example=false)
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Internal Server Error",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="Échec de la récupération des transactions."),
+     *              @OA\Property(property="success", type="boolean", example=false)
+     *          )
+     *      )
+     * )
+     */
+    public function listTransactions(string $id, TransactionService $transactionService): JsonResponse
+    {
+        // Ensure only admins can access this endpoint
+        $user = Auth::user();
+        if (!$user || !$user->admin) {
+            return $this->error(
+                'Accès non autorisé. Seuls les administrateurs peuvent voir les transactions.',
+                CompteValide::httpStatusCodes()['forbidden']
+            );
+        }
+
+        try {
+            $data = $transactionService->getAccountTransactions($id);
+
+            return $this->success(
+                [
+                    'compte' => new CompteResource($data['compte']),
+                    'transactions' => $data['transactions'],
+                    'balance' => $data['balance'],
+                ],
+                'Transactions retrieved successfully',
+                CompteValide::httpStatusCodes()['success']
+            );
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return $this->error(
+                $this->compteNotFound(),
+                CompteValide::httpStatusCodes()['not_found']
+            );
+        } catch (\Exception $e) {
+            \Log::error("Failed to retrieve transactions for compte {$id}: " . $e->getMessage());
+            return $this->error(
+                'Échec de la récupération des transactions.',
+                CompteValide::httpStatusCodes()['internal_server_error']
+            );
+        }
+    }
+
     public function unblock(DeblocageCompteRequest $request, string $id): JsonResponse
     {
         try {
