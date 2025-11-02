@@ -26,6 +26,298 @@
         }
     ],
     "paths": {
+        "/api/v1/admin/transactions": {
+            "post": {
+                "tags": [
+                    "Transactions Admin"
+                ],
+                "summary": "Créer une nouvelle transaction (Admin seulement)",
+                "operationId": "7da93846af39822ebb7e647fcb3151b7",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "compte_id",
+                                    "type",
+                                    "montant",
+                                    "description"
+                                ],
+                                "properties": {
+                                    "compte_id": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "example": "C001456"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "DEPOT",
+                                            "RETRAIT"
+                                        ],
+                                        "example": "DEPOT"
+                                    },
+                                    "montant": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 500000
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "minLength": 5,
+                                        "example": "Dépôt espèces guichet"
+                                    },
+                                    "validation_automatique": {
+                                        "description": "Optionnel, défaut: false",
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Transaction créée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "transaction": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        },
+                                                        "numero_transaction": {
+                                                            "type": "string",
+                                                            "example": "TR0001-20231102"
+                                                        },
+                                                        "compte_id": {
+                                                            "type": "string",
+                                                            "format": "uuid",
+                                                            "example": "C001456"
+                                                        },
+                                                        "compte_numero": {
+                                                            "type": "string",
+                                                            "example": "1234567890"
+                                                        },
+                                                        "titulaire": {
+                                                            "type": "string",
+                                                            "example": "John Doe"
+                                                        },
+                                                        "type": {
+                                                            "type": "string",
+                                                            "enum": [
+                                                                "DEPOT",
+                                                                "RETRAIT"
+                                                            ],
+                                                            "example": "DEPOT"
+                                                        },
+                                                        "montant": {
+                                                            "type": "number",
+                                                            "format": "float",
+                                                            "example": 500000
+                                                        },
+                                                        "montant_formatte": {
+                                                            "type": "string",
+                                                            "example": "+500 000 FCFA"
+                                                        },
+                                                        "solde_avant": {
+                                                            "type": "number",
+                                                            "format": "float",
+                                                            "example": 1000000
+                                                        },
+                                                        "solde_apres": {
+                                                            "type": "number",
+                                                            "format": "float",
+                                                            "example": 1500000
+                                                        },
+                                                        "description": {
+                                                            "type": "string",
+                                                            "example": "Dépôt espèces guichet"
+                                                        },
+                                                        "statut": {
+                                                            "type": "string",
+                                                            "enum": [
+                                                                "EN_ATTENTE",
+                                                                "VALIDEE"
+                                                            ],
+                                                            "example": "EN_ATTENTE"
+                                                        },
+                                                        "date_creation": {
+                                                            "type": "string",
+                                                            "format": "date-time",
+                                                            "example": "2023-11-02T12:00:00Z"
+                                                        },
+                                                        "cree_par": {
+                                                            "type": "string",
+                                                            "example": "Admin User"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Transaction créée avec succès"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation échouée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Le montant doit être supérieur à 0"
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifié",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "error": {
+                                            "properties": {
+                                                "code": {
+                                                    "type": "string",
+                                                    "example": "UNAUTHENTICATED"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Utilisateur non authentifié"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès refusé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "error": {
+                                            "properties": {
+                                                "code": {
+                                                    "type": "string",
+                                                    "example": "ACCESS_DENIED"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Accès refusé"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Compte non trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "error": {
+                                            "properties": {
+                                                "code": {
+                                                    "type": "string",
+                                                    "example": "NOT_FOUND"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Compte non trouvé"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Erreur serveur"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/login": {
             "post": {
                 "tags": [
@@ -1528,6 +1820,10 @@
         {
             "name": "Comptes",
             "description": "API Endpoints for Compte Management"
+        },
+        {
+            "name": "Transactions Admin",
+            "description": "Transactions Admin"
         }
     ],
     "security": [

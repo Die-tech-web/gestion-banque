@@ -110,6 +110,11 @@ class Transaction extends Model
         'devise',
         'description',
         'date',
+        'statut',
+        'cree_par',
+        'numero_transaction',
+        'solde_avant',
+        'solde_apres',
     ];
 
     protected $casts = [
