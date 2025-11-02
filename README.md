@@ -278,6 +278,199 @@ Headers:
 - Toutes les fonctionnalités existantes de blocage/déblocage manuel restent intactes
 - Les comptes débloqués automatiquement passent au statut "actif" avec remise à zéro des champs de blocage
 
+## 🚀 Guide Rapide : Création d'un Compte
+
+### 📋 **Comment créer un compte bancaire**
+
+#### **1. Prérequis**
+- Application Laravel démarrée (`php artisan serve`)
+- Base de données configurée et migrée
+- Authentification avec Sanctum (token Bearer)
+
+#### **2. Obtenir un token d'authentification**
+
+**Connexion Admin :**
+```bash
+curl -X POST http://127.0.0.1:8000/api/login \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "admin@example.com",
+    "password": "password"
+  }'
+```
+
+**Réponse :**
+```json
+{
+  "token": "votre_token_sanctum_ici"
+}
+```
+
+#### **3. Créer un compte**
+
+**Pour un NOUVEAU client :**
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/die.niang/comptes \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer VOTRE_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "epargne",
+    "soldeInitial": 800000,
+    "devise": "FCFA",
+    "client": {
+      "titulaire": "pothe ndiaye",
+      "nci": "1834567890123",
+      "email": "mapathendiaye542@gmail.com",
+      "telephone": "+221771279062",
+      "adresse": "Dakar, Sénégal"
+    }
+  }'
+```
+
+**Pour un CLIENT EXISTANT :**
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/die.niang/comptes \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer VOTRE_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "cheque",
+    "soldeInitial": 500000,
+    "devise": "FCFA",
+    "client": {
+      "id": "uuid-du-client-existant"
+    }
+  }'
+```
+
+#### **4. Route de test (sans authentification)**
+
+Pour les tests rapides, utilisez cette route spéciale :
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/die.niang/comptes/test \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "epargne",
+    "soldeInitial": 800000,
+    "devise": "FCFA",
+    "client": {
+      "titulaire": "nouveau client",
+      "nci": "9999999999999",
+      "email": "nouveau@email.com",
+      "telephone": "+221771279999",
+      "adresse": "Dakar, Sénégal"
+    }
+  }'
+```
+
+⚠️ **Important :** Les emails ne sont envoyés que pour les **NOUVEAUX clients**. Si le client existe déjà, aucun email n'est envoyé car il a déjà un compte.
+
+### ⚠️ **Erreurs communes et solutions**
+
+#### **Erreur 500 - Internal Server Error**
+- **Cause** : Client existant avec données différentes
+- **Solution** : Vérifiez si le téléphone/email existe déjà avec d'autres données
+- **Test** : Utilisez des données complètement nouvelles ou la route `/test`
+
+#### **Erreur 400 - Bad Request**
+- **Cause** : Données invalides (solde < 10000, téléphone invalide, etc.)
+- **Solution** : Vérifiez le format des données
+
+#### **Erreur 401 - Unauthorized**
+- **Cause** : Token manquant ou invalide
+- **Solution** : Obtenez un nouveau token via `/api/login`
+
+#### **Erreur 403 - Forbidden**
+- **Cause** : Permissions insuffisantes
+- **Solution** : Utilisez un compte admin
+
+#### **Pas d'email reçu ?**
+- **Cause** : L'email n'est envoyé que pour les **nouveaux clients**
+- **Solution** : Si le client existe déjà, aucun email n'est envoyé (logique métier)
+- **Vérification** : Utilisez des données complètement nouvelles pour tester les emails
+
+### 🚀 **Configuration Production**
+
+#### **Email en Production**
+Pour que les emails fonctionnent en production, configurez ces variables dans votre `.env` :
+
+```env
+# Configuration Email Production (exemple avec SendGrid)
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.sendgrid.com
+MAIL_PORT=587
+MAIL_USERNAME=votre_username_sendgrid
+MAIL_PASSWORD=votre_password_sendgrid
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=noreply@votre-domaine.com
+MAIL_FROM_NAME="Sen Banque"
+
+# Ou avec Gmail (moins recommandé pour prod)
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=votre-email@gmail.com
+MAIL_PASSWORD=votre-app-password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=votre-email@gmail.com
+MAIL_FROM_NAME="Sen Banque"
+```
+
+#### **Queue en Production**
+En production, changez la configuration des queues pour un traitement asynchrone :
+
+```env
+# .env production
+QUEUE_CONNECTION=database  # ou redis, sqs, etc.
+
+# Configuration base de données pour les queues
+DB_CONNECTION=pgsql  # ou mysql
+# ... autres configs DB
+```
+
+Puis exécutez :
+```bash
+php artisan queue:table
+php artisan migrate
+php artisan queue:work
+```
+
+#### **Vérification Configuration**
+Testez votre configuration email en production :
+```bash
+php artisan tinker
+```
+```php
+Mail::raw('Test production', function($message) {
+    $message->to('votre-email@test.com')->subject('Test Prod');
+});
+```
+
+### � **Réponse de succès**
+```json
+{
+  "success": true,
+  "message": "Demande de création de compte enregistrée",
+  "data": {
+    "message": "Votre demande de création de compte a été prise en compte avec succès. Un email et un SMS de confirmation vous seront envoyés.",
+    "status": "processing"
+  }
+}
+```
+
+### 🔍 **Vérifier la création**
+Après création, vérifiez les comptes :
+```bash
+curl -X GET http://127.0.0.1:8000/api/v1/die.niang/comptes \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer VOTRE_TOKEN"
+```
+
+---
+
 ## Tests Postman pour la Création de Compte
 
 Cette section fournit tous les tests nécessaires pour tester la fonctionnalité de création de compte avec Postman.

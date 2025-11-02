@@ -60,6 +60,63 @@ class CreateAccountJob implements ShouldQueue
                 }
             }
 
+            // Si un client existe mais que les données ne correspondent pas, traiter comme nouveau client
+            if ($client && $this->isNewClient) {
+                // Vérifier si les données correspondent
+                $dataMatches = true;
+                if (isset($this->clientData['titulaire']) && $client->user->name !== $this->clientData['titulaire']) {
+                    $dataMatches = false;
+                }
+                if (isset($this->clientData['email']) && $client->email !== $this->clientData['email']) {
+                    $dataMatches = false;
+                }
+                if (isset($this->clientData['nci']) && $client->nci !== $this->clientData['nci']) {
+                    $dataMatches = false;
+                }
+                if (isset($this->clientData['adresse']) && $client->adresse !== $this->clientData['adresse']) {
+                    $dataMatches = false;
+                }
+
+                if (!$dataMatches) {
+                    // Les données ne correspondent pas, traiter comme nouveau client
+                    $client = null;
+                    $this->isNewClient = true;
+                } else {
+                    // Les données correspondent, utiliser le client existant
+                    $this->isNewClient = false;
+                }
+            }
+
+            // Si c'est un nouveau client mais qu'un client avec le même téléphone existe, vérifier si c'est le même client
+            if ($this->isNewClient && isset($this->clientData['telephone'])) {
+                $existingClientByPhone = Client::where('telephone', $this->clientData['telephone'])->first();
+                if ($existingClientByPhone) {
+                    // Vérifier si les données correspondent
+                    $phoneDataMatches = true;
+                    if (isset($this->clientData['titulaire']) && $existingClientByPhone->user->name !== $this->clientData['titulaire']) {
+                        $phoneDataMatches = false;
+                    }
+                    if (isset($this->clientData['email']) && $existingClientByPhone->email !== $this->clientData['email']) {
+                        $phoneDataMatches = false;
+                    }
+                    if (isset($this->clientData['nci']) && $existingClientByPhone->nci !== $this->clientData['nci']) {
+                        $phoneDataMatches = false;
+                    }
+                    if (isset($this->clientData['adresse']) && $existingClientByPhone->adresse !== $this->clientData['adresse']) {
+                        $phoneDataMatches = false;
+                    }
+
+                    if ($phoneDataMatches) {
+                        // C'est le même client, utiliser l'existant
+                        $client = $existingClientByPhone;
+                        $this->isNewClient = false;
+                    } else {
+                        // Différent client avec même téléphone, erreur
+                        throw new \Exception('Un client avec ce numéro de téléphone existe déjà avec des données différentes.');
+                    }
+                }
+            }
+
             // Si client non trouvé, créer un nouveau client
             if (!$client) {
                 // Créer un nouvel utilisateur
@@ -76,6 +133,11 @@ class CreateAccountJob implements ShouldQueue
                 // Vérifier si un client avec ce téléphone existe déjà
                 if (Client::where('telephone', $telephone)->exists()) {
                     throw new \Exception('Un client avec ce numéro de téléphone existe déjà.');
+                }
+
+                // Vérifier si un client avec ce NCI existe déjà
+                if (Client::where('nci', $this->clientData['nci'])->exists()) {
+                    throw new \Exception('Un client avec ce numéro NCI existe déjà.');
                 }
 
                 $user = User::create([
