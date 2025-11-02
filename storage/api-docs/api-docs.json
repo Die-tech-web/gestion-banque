@@ -26,6 +26,285 @@
         }
     ],
     "paths": {
+        "/api/v1/admin/dashboard": {
+            "get": {
+                "tags": [
+                    "Transactions Admin"
+                ],
+                "summary": "Afficher le tableau de bord administrateur",
+                "operationId": "3815088d27b899cd83f51c33cb57ed0f",
+                "responses": {
+                    "200": {
+                        "description": "Dashboard chargé avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "total_compte": {
+                                                    "type": "integer",
+                                                    "example": 24
+                                                },
+                                                "sous_total_balance": {
+                                                    "properties": {
+                                                        "somme_depots": {
+                                                            "type": "number",
+                                                            "format": "float",
+                                                            "example": 15750000
+                                                        },
+                                                        "somme_depots_formatte": {
+                                                            "type": "string",
+                                                            "example": "15 750 000 FCFA"
+                                                        },
+                                                        "somme_retraits": {
+                                                            "type": "number",
+                                                            "format": "float",
+                                                            "example": 8920000
+                                                        },
+                                                        "somme_retraits_formatte": {
+                                                            "type": "string",
+                                                            "example": "8 920 000 FCFA"
+                                                        },
+                                                        "balance": {
+                                                            "type": "number",
+                                                            "format": "float",
+                                                            "example": 6830000
+                                                        },
+                                                        "balance_formatte": {
+                                                            "type": "string",
+                                                            "example": "6 830 000 FCFA"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                },
+                                                "nombre_transactions": {
+                                                    "type": "integer",
+                                                    "example": 248
+                                                },
+                                                "liste_10_dernieres_transactions": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "string",
+                                                                "format": "uuid",
+                                                                "example": "TR0850"
+                                                            },
+                                                            "numero_transaction": {
+                                                                "type": "string",
+                                                                "example": "TR0850-20231102"
+                                                            },
+                                                            "compte": {
+                                                                "properties": {
+                                                                    "id": {
+                                                                        "type": "string",
+                                                                        "format": "uuid",
+                                                                        "example": "C001456"
+                                                                    },
+                                                                    "numero": {
+                                                                        "type": "string",
+                                                                        "example": "C001456"
+                                                                    },
+                                                                    "titulaire": {
+                                                                        "type": "string",
+                                                                        "example": "Boubacar Diallo"
+                                                                    }
+                                                                },
+                                                                "type": "object"
+                                                            },
+                                                            "type": {
+                                                                "type": "string",
+                                                                "enum": [
+                                                                    "DEPOT",
+                                                                    "RETRAIT"
+                                                                ],
+                                                                "example": "DEPOT"
+                                                            },
+                                                            "montant": {
+                                                                "type": "number",
+                                                                "format": "float",
+                                                                "example": 500000
+                                                            },
+                                                            "montant_formatte": {
+                                                                "type": "string",
+                                                                "example": "+500 000 FCFA"
+                                                            },
+                                                            "description": {
+                                                                "type": "string",
+                                                                "example": "Dépôt espèces"
+                                                            },
+                                                            "statut": {
+                                                                "type": "string",
+                                                                "enum": [
+                                                                    "VALIDEE",
+                                                                    "EN_ATTENTE",
+                                                                    "REJETEE"
+                                                                ],
+                                                                "example": "VALIDEE"
+                                                            },
+                                                            "date_creation": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "example": "2023-11-02T15:30:00Z"
+                                                            },
+                                                            "date_validation": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "example": "2023-11-02T15:35:00Z",
+                                                                "nullable": true
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "liste_comptes_crees_aujourdhui": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "string",
+                                                                "format": "uuid",
+                                                                "example": "C001470"
+                                                            },
+                                                            "numero": {
+                                                                "type": "string",
+                                                                "example": "C001470"
+                                                            },
+                                                            "titulaire": {
+                                                                "type": "string",
+                                                                "example": "Abdoulaye Diallo"
+                                                            },
+                                                            "type": {
+                                                                "type": "string",
+                                                                "enum": [
+                                                                    "COURANT",
+                                                                    "EPARGNE",
+                                                                    "CHEQUE"
+                                                                ],
+                                                                "example": "COURANT"
+                                                            },
+                                                            "solde_actuel": {
+                                                                "type": "number",
+                                                                "format": "float",
+                                                                "example": 500000
+                                                            },
+                                                            "solde_actuel_formatte": {
+                                                                "type": "string",
+                                                                "example": "500 000 FCFA"
+                                                            },
+                                                            "statut": {
+                                                                "type": "string",
+                                                                "enum": [
+                                                                    "ACTIF",
+                                                                    "FERME",
+                                                                    "SUSPENDU",
+                                                                    "BLOQUE"
+                                                                ],
+                                                                "example": "ACTIF"
+                                                            },
+                                                            "date_creation": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "example": "2023-11-02T09:30:00Z"
+                                                            },
+                                                            "cree_par": {
+                                                                "type": "string",
+                                                                "example": "Admin Jean Dupont"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Dashboard chargé avec succès"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifié",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Authentication requise"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès refusé (pas admin)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Accès refusé. Vous devez être administrateur."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Erreur lors du chargement du dashboard"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Details de l'erreur"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v1/admin/transactions": {
             "post": {
                 "tags": [
