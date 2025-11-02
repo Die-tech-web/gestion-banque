@@ -658,6 +658,114 @@
                 }
             }
         },
+        "/api/v1/login": {
+            "post": {
+                "tags": [
+                    "Authentification Client"
+                ],
+                "summary": "Connexion client",
+                "description": "Authentifie un client avec email et mot de passe et retourne un token d'accès OAuth2",
+                "operationId": "clientLogin",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "abdoulaye150199@gmail.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "fsazI18BAfiy"
+                                    },
+                                    "code_authentification": {
+                                        "type": "string",
+                                        "example": "iDYWxd"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Connexion réussie",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "token": {
+                                            "type": "string",
+                                            "example": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..."
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "Bearer"
+                                        },
+                                        "expires_in": {
+                                            "type": "integer",
+                                            "example": 31536000
+                                        },
+                                        "refresh_token": {
+                                            "type": "string",
+                                            "example": "def50200..."
+                                        },
+                                        "expires_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2026-11-02T21:12:46.000000Z"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Identifiants invalides",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Identifiants invalides"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Données de validation invalides",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The email field is required."
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/comptes": {
             "get": {
                 "tags": [
@@ -2095,6 +2203,10 @@
         {
             "name": "Authentification",
             "description": "Endpoints pour l'authentification des utilisateurs"
+        },
+        {
+            "name": "Authentification Client",
+            "description": "Endpoints pour l'authentification des clients"
         },
         {
             "name": "Comptes",

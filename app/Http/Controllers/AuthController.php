@@ -104,4 +104,113 @@ class AuthController extends Controller
             'expires_at' => Carbon::now()->addSeconds(config('passport.tokens.expire_in', 31536000))->toIso8601String(),
         ])->cookie('api_token', $token->accessToken, 60*24*7, '/', null, false, true);
     }
+
+    /**
+     * Authentifie un client avec email et mot de passe et retourne un token d'accès
+     *
+     * @OA\Post(
+     *      path="/api/v1/login",
+     *      operationId="clientLogin",
+     *      tags={"Authentification Client"},
+     *      summary="Connexion client",
+     *      description="Authentifie un client avec email et mot de passe et retourne un token d'accès OAuth2",
+     * @OA\RequestBody(
+     *          required=true,
+     *          @OA\JsonContent(
+     *              required={"email"},
+     *              @OA\Property(property="email", type="string", format="email", example="abdoulaye150199@gmail.com"),
+     *              @OA\Property(property="password", type="string", example="fsazI18BAfiy"),
+     *              @OA\Property(property="code_authentification", type="string", example="iDYWxd")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Connexion réussie",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="token", type="string", example="eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..."),
+     *              @OA\Property(property="token_type", type="string", example="Bearer"),
+     *              @OA\Property(property="expires_in", type="integer", example=31536000),
+     *              @OA\Property(property="refresh_token", type="string", example="def50200..."),
+     *              @OA\Property(property="expires_at", type="string", format="date-time", example="2026-11-02T21:12:46.000000Z")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Identifiants invalides",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Identifiants invalides")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=422,
+     *          description="Données de validation invalides",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="The email field is required."),
+     *              @OA\Property(property="errors", type="object")
+     *          )
+     *      )
+     * )
+     *
+     * @OA\Tag(
+     *     name="Authentification Client",
+     *     description="Endpoints pour l'authentification des clients"
+     * )
+     */
+    public function clientLogin(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'sometimes|required_without:code_authentification',
+            'code_authentification' => 'sometimes|required_without:password',
+        ], \App\Rules\ApiMessages::authValidationMessages());
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return response()->json(['message' => \App\Rules\ApiMessages::authErrorMessages()['invalid_credentials']], 401);
+        }
+
+        // Vérifier que c'est bien un client
+        if (!$user->client()->exists()) {
+            return response()->json(['message' => 'Accès non autorisé pour les administrateurs'], 403);
+        }
+
+        $client = $user->client;
+
+        // Vérifier l'authentification : soit password soit code_authentification
+        $authenticated = false;
+        if ($request->has('password') && Hash::check($request->password, $user->password)) {
+            $authenticated = true;
+        } elseif ($request->has('code_authentification') && $client->code_authentification === $request->code_authentification) {
+            $authenticated = true;
+        }
+
+        if (!$authenticated) {
+            return response()->json(['message' => \App\Rules\ApiMessages::authErrorMessages()['invalid_credentials']], 401);
+        }
+
+        // Créer un token d'accès OAuth directement
+        $oauthClient = \Laravel\Passport\Client::where('password_client', 1)->first();
+
+        if (!$oauthClient) {
+            return response()->json(['message' => 'OAuth client not configured'], 500);
+        }
+
+        // Créer le token avec le client password grant (pas de scopes pour les clients)
+        $token = $user->createToken('API Token', [], $oauthClient->id);
+
+        // Générer un refresh token qui expire dans 30 jours
+        $refreshToken = $user->createToken('Refresh Token', [], $oauthClient->id);
+        $refreshToken->token->expires_at = Carbon::now()->addDays(30);
+        $refreshToken->token->save();
+
+        return response()->json([
+            'token' => $token->accessToken,
+            'token_type' => 'Bearer',
+            'expires_in' => config('passport.tokens.expire_in', 31536000),
+            'refresh_token' => $refreshToken->accessToken,
+            'expires_at' => Carbon::now()->addSeconds(config('passport.tokens.expire_in', 31536000))->toIso8601String(),
+        ])->cookie('api_token', $token->accessToken, 60*24*7, '/', null, false, true);
+    }
 }

@@ -26,6 +26,9 @@ use App\Models\User;
 // Route de connexion publique
 Route::post('/login', [AuthController::class, 'login']);
 
+// Route de connexion client uniquement
+Route::post('/v1/login', [AuthController::class, 'clientLogin']);
+
 Route::middleware(['auth.api_cookie'])->group(function () {
     Route::middleware(['auth.api'])->group(function () {
         Route::middleware(['App\Http\Middleware\LoggingMiddleware'])->group(function () {
