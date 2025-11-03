@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\CompteController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\ClientTransactionController;
 use App\Http\Controllers\AdminTransactionController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Models\User;
@@ -29,20 +30,20 @@ Route::post('/login', [AuthController::class, 'login']);
 // Route de connexion client uniquement
 Route::post('/v1/login', [AuthController::class, 'clientLogin']);
 
-Route::middleware(['auth.api_cookie'])->group(function () {
-    Route::middleware(['auth.api'])->group(function () {
-        Route::middleware(['App\Http\Middleware\LoggingMiddleware'])->group(function () {
-            Route::apiResource('comptes', CompteController::class)->only(['index', 'show']);
-            Route::patch('/comptes/{id}', [CompteController::class, 'update']);
-            Route::middleware(['App\Http\Middleware\IsAdmin'])->group(function () {
-                Route::get('/admin/dashboard', [AdminDashboardController::class, 'dashboard']);
-                Route::post('/comptes/{id}/bloquer', [CompteController::class, 'block']);
-                Route::post('/comptes/{id}/debloquer', [CompteController::class, 'unblock']);
-                Route::get('/admin/comptes/{id}/transactions', [TransactionController::class, 'showByCompte']);
-                Route::post('/admin/transactions', [AdminTransactionController::class, 'store']);
-            });
-            Route::delete('/comptes/{id}', [CompteController::class, 'destroy']);
+Route::middleware(['auth.api'])->group(function () {
+    Route::middleware(['App\Http\Middleware\LoggingMiddleware'])->group(function () {
+        Route::apiResource('comptes', CompteController::class)->only(['index', 'show']);
+        Route::patch('/comptes/{id}', [CompteController::class, 'update']);
+        Route::middleware(['App\Http\Middleware\IsAdmin'])->group(function () {
+            Route::get('/admin/dashboard', [AdminDashboardController::class, 'dashboard']);
+            Route::post('/comptes/{id}/bloquer', [CompteController::class, 'block']);
+            Route::post('/comptes/{id}/debloquer', [CompteController::class, 'unblock']);
+            Route::get('/admin/comptes/{id}/transactions', [TransactionController::class, 'showByCompte']);
+            Route::post('/admin/transactions', [AdminTransactionController::class, 'store']);
         });
+        // Route pour les clients : voir leurs propres transactions
+        Route::middleware(['App\Http\Middleware\IsClient'])->get('/comptes/{compte_id}/transactions', [ClientTransactionController::class, 'showByCompte']);
+        Route::delete('/comptes/{id}', [CompteController::class, 'destroy']);
     });
 });
 // Route temporaire pour tester sans authentification (supprimée pour sécurité)

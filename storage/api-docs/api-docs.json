@@ -766,6 +766,129 @@
                 }
             }
         },
+        "/api/v1/comptes/{compte_id}/transactions": {
+            "get": {
+                "tags": [
+                    "Transactions Client"
+                ],
+                "summary": "Liste des transactions d'un compte pour un client authentifié",
+                "operationId": "068c5ec64ba13d55aaf3cf2349f8aa28",
+                "parameters": [
+                    {
+                        "name": "compte_id",
+                        "in": "path",
+                        "description": "ID du compte",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des transactions et solde du compte",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Liste des transactions du compte"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "client": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string",
+                                                            "format": "uuid",
+                                                            "example": "cli_12345"
+                                                        },
+                                                        "titulaire": {
+                                                            "type": "string",
+                                                            "example": "nom Niang"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                },
+                                                "compte_id": {
+                                                    "type": "string",
+                                                    "format": "uuid",
+                                                    "example": "cmp_001"
+                                                },
+                                                "solde": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 150000
+                                                },
+                                                "transactions": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/Transaction"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Utilisateur non authentifié",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Utilisateur non authentifié"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Compte non trouvé ou accès non autorisé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Compte non trouvé ou accès non autorisé"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v1/comptes": {
             "get": {
                 "tags": [
@@ -2215,6 +2338,10 @@
         {
             "name": "Transactions Admin",
             "description": "Transactions Admin"
+        },
+        {
+            "name": "Transactions Client",
+            "description": "Transactions Client"
         }
     ],
     "security": [
